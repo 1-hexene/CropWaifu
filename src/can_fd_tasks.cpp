@@ -7,65 +7,65 @@ static unsigned gReceivedCount = 0;
 static SPIClass SPI2(FSPI);
 static ACAN2517FD can2(SELECT, SPI2, 255);
 
-void print_can_fd_message(HardwareSerial _hardwareSerial, CANFDMessage canFdMessage, bool direction_is_send)
+void print_can_fd_message(HardwareSerial *_hardwareSerial, CANFDMessage canFdMessage, bool direction_is_send)
 {
     if (direction_is_send)
     {
-        _hardwareSerial.print("[MCP2518FD][Send] Index = ");
-        _hardwareSerial.println(gSentCount);
+        _hardwareSerial->print("[MCP2518FD][Send] Index = ");
+        _hardwareSerial->println(gSentCount);
     }
     else
     {
-        _hardwareSerial.print("[MCP2518FD][Received] Index = ");
-        _hardwareSerial.println(gReceivedCount);
+        _hardwareSerial->print("[MCP2518FD][Received] Index = ");
+        _hardwareSerial->println(gReceivedCount);
     }
 
-    _hardwareSerial.print("ID: ");
-    _hardwareSerial.println(canFdMessage.id);
+    _hardwareSerial->print("ID: ");
+    _hardwareSerial->println(canFdMessage.id);
 
-    _hardwareSerial.print("Length: ");
-    _hardwareSerial.println(canFdMessage.len);
+    _hardwareSerial->print("Length: ");
+    _hardwareSerial->println(canFdMessage.len);
 
-    _hardwareSerial.print("Extended Frame: ");
-    _hardwareSerial.println(canFdMessage.ext ? "Yes" : "No");
+    _hardwareSerial->print("Extended Frame: ");
+    _hardwareSerial->println(canFdMessage.ext ? "Yes" : "No");
 
-    _hardwareSerial.print("Type: ");
+    _hardwareSerial->print("Type: ");
     switch (canFdMessage.type)
     {
     case CANFDMessage::Type::CAN_DATA:
-        _hardwareSerial.println("Can data frame");
+        _hardwareSerial->println("Can data frame");
         break;
     case CANFDMessage::Type::CAN_REMOTE:
-        _hardwareSerial.println("Can remote frame");
+        _hardwareSerial->println("Can remote frame");
         break;
     case CANFDMessage::Type::CANFD_NO_BIT_RATE_SWITCH:
-        _hardwareSerial.println("Can frame without bitrate switch");
+        _hardwareSerial->println("Can frame without bitrate switch");
         break;
     case CANFDMessage::Type::CANFD_WITH_BIT_RATE_SWITCH:
-        _hardwareSerial.println("fuck you");
+        _hardwareSerial->println("Can frame with bitrate switch");
         break;
     default:
-        _hardwareSerial.println("Error");
+        _hardwareSerial->println("Error");
         break;
     }
 
-    _hardwareSerial.print("Content: ");
+    _hardwareSerial->print("Content: ");
     if (canFdMessage.len)
     {
         for (uint8_t i = 0; i < canFdMessage.len; i++)
         {
             if (canFdMessage.data[i] < 0x10)
             {
-                _hardwareSerial.print("0");
+                _hardwareSerial->print("0");
             }
-            _hardwareSerial.print(canFdMessage.data[i], HEX);
-            _hardwareSerial.print(" ");
+            _hardwareSerial->print(canFdMessage.data[i], HEX);
+            _hardwareSerial->print(" ");
         }
-        _hardwareSerial.println();
+        _hardwareSerial->println();
     }
     else
     {
-        _hardwareSerial.println("Nothing.");
+        _hardwareSerial->println("Nothing.");
     }
 }
 
@@ -82,7 +82,7 @@ void can_fd_init()
         ACAN2517FDSettings::OSC_40MHz,
         1000 * 1000, // DesiredArbitrationBitRate
         DataBitRateFactor::x8);
-    settings.mRequestedMode = ACAN2517FDSettings::NormalFD;
+    settings.mRequestedMode = ACAN2517FDSettings::InternalLoopBack; //close ack requirements
 
     const uint32_t errorCode = can2.begin(settings, NULL);
     if (!errorCode)
@@ -105,7 +105,7 @@ void can_fd_send_task(void *pvParameters)
         if (ok)
         {
             gSentCount += 1;
-            print_can_fd_message(Serial, message, true);
+            print_can_fd_message(&Serial, message, true);
         }
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
@@ -119,7 +119,7 @@ void can_fd_receive_task(void *pvParameters)
         if (can2.receive(message))
         {
             gReceivedCount += 1;
-            print_can_fd_message(Serial, message, false);
+            print_can_fd_message(&Serial, message, false);
         }
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
