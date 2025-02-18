@@ -90,8 +90,14 @@ void twai_send_task(void *pvParameters)
     message.data_length_code = 8;
     while (1)
     {
-        ESP32Can.writeFrame(message);
-        twaiSentCount += 1;
+        if(ESP32Can.writeFrame(message)){
+            if (PRINT_CAN_MSGS)
+            {
+                print_twai_message(&Serial, &message, true);
+            }
+            twaiSentCount += 1;
+        }
+        
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 }
@@ -103,7 +109,10 @@ void twai_receive_task(void *pvParameters)
     {
         if (ESP32Can.readFrame(message, 1000))
         {
-            print_twai_message(&Serial, &message, false);
+            if (PRINT_CAN_MSGS)
+            {
+                print_twai_message(&Serial, &message, false);
+            }
             twaiReceivedCount += 1;
         }
         vTaskDelay(1000/portTICK_PERIOD_MS);

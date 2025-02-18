@@ -86,7 +86,7 @@ void can_fd_init()
         DataBitRateFactor::x8); */
     
     ACAN2517FDSettings settings(
-        ACAN2517FDSettings::OSC_40MHz_DIVIDED_BY_2,
+        ACAN2517FDSettings::OSC_40MHz,
         1000*1000, // DesiredArbitrationBitRate
         DataBitRateFactor::x1);
     settings.mRequestedMode = ACAN2517FDSettings::Normal20B;
@@ -112,7 +112,12 @@ void can_fd_send_task(void *pvParameters)
         if (ok)
         {
             gSentCount += 1;
-            //print_can_fd_message(&Serial, &message, true);
+            if (PRINT_CAN_MSGS)
+            {
+                print_can_fd_message(&Serial, &message, true);
+            }
+            
+            
         }
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
@@ -126,7 +131,12 @@ void can_fd_receive_task(void *pvParameters)
         if (can2.receive(message))
         {
             gReceivedCount += 1;
-            print_can_fd_message(&Serial, &message, false);
+            if (PRINT_CAN_MSGS)
+            {
+                print_can_fd_message(&Serial, &message, false);
+            }
+            
+            
         }
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
