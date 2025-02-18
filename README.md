@@ -1,7 +1,7 @@
 # CanWaifu
-A CAN FD analyzer based on ESP32, with packets transmitted via Wi-Fi.
-MCU: ESP32-C3
-CAN FD Controller: MCP2518FD
+A CAN FD analyzer based on ESP32, with packets transmitted via Wi-Fi. <br>
+**MCU**: ESP32-C3 <br>
+**CAN FD Controller**: MCP2518FD
 ## Board Image
 ![CANalyzer-img](images/CANalyzer.png)
 
