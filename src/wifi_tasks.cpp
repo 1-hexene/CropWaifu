@@ -1,4 +1,4 @@
-#include "wifi_tasks.h"
+#include <wifi_tasks.h>
 
 static WiFiClass Wifi;
 
@@ -9,5 +9,4 @@ void wifi_init(){
     if (Wifi.softAP("CanWaifu", "canwaifu")){
         Serial.println("[Wifi] Wifi is up.");
     }
-    
 }

@@ -1,5 +1,5 @@
-#ifndef WIFI_TASKS
-#define WIFI_TASKS
+#ifndef WIFI_TASKS_H
+#define WIFI_TASKS_H
 
 #include <Arduino.h>
 #include <WiFi.h>
