@@ -3,6 +3,10 @@
 
 #define HTTP_SERVER_PORT 80
 #include <ESPAsyncWebServer.h> 
+#include <SPIFFS.h>
+#include <iostream>
+#include <fstream>
+#include <string>
 
 void webserver_init();
 void webserver_post_task(void* pvParameters);
