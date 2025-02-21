@@ -1,12 +1,15 @@
 #include <can_fd_tasks.h>
 #include <twai_tasks.h>
 #include <wifi_tasks.h>
+#include <webserver_tasks.h>
 
 void setup()
 {
   can_fd_init();
   twai_init();
   wifi_init();
+  webserver_init();
+
   xTaskCreate(can_fd_receive_task, "can_fd_receive_task", 4096, NULL, 10, NULL);
   Serial.println("[Main] Created CANFD receive service");
   xTaskCreate(can_fd_send_task, "can_fd_send_task", 4096, NULL, 11, NULL);

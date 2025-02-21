@@ -7,7 +7,8 @@ static unsigned gReceivedCount = 0;
 static SPIClass SPI2(FSPI);
 static ACAN2517FD can2(MCP2518FD_CHIP_SELECT, SPI2, 255);
 
-void print_can_fd_message(HardwareSerial* _hardwareSerial, CANFDMessage* canFdMessage, bool direction_is_send)
+template <typename T>
+void print_can_fd_message(const T _hardwareSerial, CANFDMessage* canFdMessage, bool direction_is_send)
 {
     if (direction_is_send)
     {
