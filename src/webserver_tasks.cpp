@@ -1,6 +1,5 @@
 #include <webserver_tasks.h>
 
-
 static AsyncWebServer webServer(HTTP_SERVER_PORT);
 File loading_html;
 String loading_html_content;
@@ -12,9 +11,12 @@ void webserver_init(){
         vTaskDelay(1000/portTICK_PERIOD_MS);
     }
     Serial.println("[Webserver] SPIFFS OK.");
+
+
     loading_html = SPIFFS.open("/loading.html");
     loading_html_content = loading_html.readStringUntil('\0');
     loading_html.close();
+
 
     webServer.on("/", HTTP_GET, [](AsyncWebServerRequest* request) { 
 	   Serial.print("[WebServer]: New request received:");  // for debugging 
