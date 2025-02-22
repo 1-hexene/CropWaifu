@@ -23,14 +23,9 @@ void webserver_init(){
 	   Serial.println("GET /");        // for debugging 
 	   request->send(200, "text/html", loading_html_content); 
     });
+
+    
+
     webServer.begin();
     Serial.printf("[WebServer] WebServer is listening on %d...\n", 80);
-}
-
-void webserver_post_task(void* pvParameters){
-
-}
-
-void webserver_get_task(void* pvParameters){
-
 }

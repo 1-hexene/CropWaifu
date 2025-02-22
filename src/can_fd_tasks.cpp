@@ -6,10 +6,12 @@ static unsigned gReceivedCount = 0;
 
 static SPIClass SPI2(FSPI);
 static ACAN2517FD can2(MCP2518FD_CHIP_SELECT, SPI2, 255);
+static CanMsgWrapper canMsgWrapperList[63];
 
 template <typename T>
-void print_can_fd_message(const T _hardwareSerial, CANFDMessage* canFdMessage, bool direction_is_send)
+void print_can_fd_message(const T _hardwareSerial, CANFDMessage *canFdMessage, bool direction_is_send)
 {
+#ifdef PRINT_CAN_MSGS
     if (direction_is_send)
     {
         _hardwareSerial->println("---------[MCP2518FD][Send]----------");
@@ -70,9 +72,28 @@ void print_can_fd_message(const T _hardwareSerial, CANFDMessage* canFdMessage, b
     {
         _hardwareSerial->println("Nothing.");
     }
+#endif
 }
 
-void can_fd_init()
+CANFDMessage getCanFdMsgFromList(uint8_t msgIndex){
+    return (canMsgWrapperList + msgIndex)->getCanFdMsgContent();
+}
+
+/*
+* @brief 无参数的初始化canfd函数 以标准can模式、1MBit/s、40MHz二分频启动。
+*/
+void can_fd_init(){
+    can_fd_init(7, 1*1000*1000, 1, 6);
+}
+
+/*
+* @brief 初始化canfd函数
+* @param oscFreq 晶振设置。oscFreq=6: 40MHz; oscFreq=7: 40MHz二分频。不要设置为其他值。
+* @param arbitrationBitRate 仲裁（标准）部分比特率。例如设为1*1000*1000就是1MBit/s。
+* @param dataBitRatefactor 数据比特率乘数。是仲裁部分比特率和数据部分比特率的比值。例如设为8就是8MBit/s。需要注意的是，如果工作在标准can模式下，此项要设为1。
+* @param mode MCP2518FD的工作模式。0: FD模式; 6: 标准Can模式; 3: 仅监听模式。不要设置为其他值。
+*/
+void can_fd_init(uint8_t oscFreq, uint8_t arbitrationBitRate, uint8_t dataBitRatefactor, uint8_t mode)
 {
     pinMode(8, OUTPUT);
     digitalWrite(8, 0);
@@ -85,12 +106,12 @@ void can_fd_init()
         ACAN2517FDSettings::OSC_40MHz,
         1000 * 1000, // DesiredArbitrationBitRate
         DataBitRateFactor::x8); */
-    
+
     ACAN2517FDSettings settings(
-        ACAN2517FDSettings::OSC_40MHz,
-        1000*1000, // DesiredArbitrationBitRate
-        DataBitRateFactor::x1);
-    settings.mRequestedMode = ACAN2517FDSettings::Normal20B;
+        ACAN2517FDSettings::Oscillator(oscFreq),
+        arbitrationBitRate, // DesiredArbitrationBitRate
+        DataBitRateFactor(dataBitRatefactor));
+    settings.mRequestedMode = ACAN2517FDSettings::OperationMode(mode);
 
     const uint32_t errorCode = can2.begin(settings, NULL);
     if (!errorCode)
@@ -113,12 +134,7 @@ void can_fd_send_task(void *pvParameters)
         if (ok)
         {
             gSentCount += 1;
-            if (PRINT_CAN_MSGS)
-            {
-                print_can_fd_message(&Serial, &message, true);
-            }
-            
-            
+            print_can_fd_message(&Serial, &message, true);
         }
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
@@ -132,12 +148,7 @@ void can_fd_receive_task(void *pvParameters)
         if (can2.receive(message))
         {
             gReceivedCount += 1;
-            if (PRINT_CAN_MSGS)
-            {
-                print_can_fd_message(&Serial, &message, false);
-            }
-            
-            
+            print_can_fd_message(&Serial, &message, false);
         }
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
