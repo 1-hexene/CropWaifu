@@ -6,6 +6,7 @@ static unsigned twaiReceivedCount = 0;
 
 void print_twai_message(HardwareSerial *_hardwareSerial, CanFrame *canFrame, bool direction_is_send)
 {
+#ifdef PRINT_CAN_MSGS
     if (direction_is_send)
     {
         _hardwareSerial->println("---------[TWAI][Send]----------");
@@ -60,6 +61,7 @@ void print_twai_message(HardwareSerial *_hardwareSerial, CanFrame *canFrame, boo
     {
         _hardwareSerial->println("Nothing.");
     }
+#endif
 }
 
 void twai_init()
@@ -85,7 +87,7 @@ void twai_init()
 void twai_send_task(void *pvParameters)
 {
     CanFrame message;
-    message.identifier = 0x114;
+    message.identifier = TWAI_MSG_ID;
     message.extd = 0;
     message.data_length_code = 8;
     while (1)
@@ -96,7 +98,7 @@ void twai_send_task(void *pvParameters)
             twaiSentCount += 1;
         }
 
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        vTaskDelay((1000/TWAI_SEND_FREQ) / portTICK_PERIOD_MS);
     }
 }
 
@@ -110,6 +112,6 @@ void twai_receive_task(void *pvParameters)
             print_twai_message(&Serial, &message, false);
             twaiReceivedCount += 1;
         }
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        vTaskDelay(10 / portTICK_PERIOD_MS);
     }
 }

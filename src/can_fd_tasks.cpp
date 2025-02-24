@@ -8,6 +8,25 @@ static SPIClass SPI2(FSPI);
 static ACAN2517FD can2(MCP2518FD_CHIP_SELECT, SPI2, 255);
 static CanMsgWrapper canMsgWrapperList[63];
 
+SemaphoreHandle_t canMsgMutex = xSemaphoreCreateMutex();
+
+CanMsgWrapper* getCanMsgWrapperList(){
+    return canMsgWrapperList;
+}
+
+// 每秒清零 frequency 的任务
+void can_fd_reset_frequency_task(void *pvParameters) {
+    while (1) {
+        xSemaphoreTake(canMsgMutex, portMAX_DELAY);
+        for (int i = 0; i < 63; i++) {
+            canMsgWrapperList[i].resetCount();
+        }
+        xSemaphoreGive(canMsgMutex);
+        vTaskDelay(1000 / portTICK_PERIOD_MS); // 每秒执行一次
+    }
+}
+
+
 template <typename T>
 void print_can_fd_message(const T _hardwareSerial, CANFDMessage *canFdMessage, bool direction_is_send)
 {
@@ -93,7 +112,7 @@ void can_fd_init(){
 * @param dataBitRatefactor 数据比特率乘数。是仲裁部分比特率和数据部分比特率的比值。例如设为8就是8MBit/s。需要注意的是，如果工作在标准can模式下，此项要设为1。
 * @param mode MCP2518FD的工作模式。0: FD模式; 6: 标准Can模式; 3: 仅监听模式。不要设置为其他值。
 */
-void can_fd_init(uint8_t oscFreq, uint8_t arbitrationBitRate, uint8_t dataBitRatefactor, uint8_t mode)
+void can_fd_init(uint8_t oscFreq, uint32_t arbitrationBitRate, uint8_t dataBitRatefactor, uint8_t mode)
 {
     pinMode(8, OUTPUT);
     digitalWrite(8, 0);
@@ -129,27 +148,46 @@ void can_fd_send_task(void *pvParameters)
     CANFDMessage message;
     while (1)
     {
-        message.id = 0x542;
+        message.id = CAN_FD_MSG_ID;
         const bool ok = can2.tryToSend(message);
         if (ok)
         {
             gSentCount += 1;
             print_can_fd_message(&Serial, &message, true);
         }
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        vTaskDelay((1000/CAN_FD_SEND_FREQ) / portTICK_PERIOD_MS);
     }
 }
 
-void can_fd_receive_task(void *pvParameters)
-{
+void can_fd_receive_task(void *pvParameters) {
     CANFDMessage message;
-    while (1)
-    {
-        if (can2.receive(message))
-        {
-            gReceivedCount += 1;
-            print_can_fd_message(&Serial, &message, false);
+    while (1) {
+        if (can2.receive(message)) {
+            xSemaphoreTake(canMsgMutex, portMAX_DELAY);
+
+            int index = -1;
+            for (int i = 0; i < 63; i++) {
+                if (canMsgWrapperList[i].getCanFdMsgContent().id == message.id) {
+                    index = i;
+                    break;
+                }
+            }
+
+            if (index == -1) { // 如果未找到相同 ID 的报文
+                for (int i = 0; i < 63; i++) {
+                    if (canMsgWrapperList[i].getFrequency() == 0) {
+                        index = i;
+                        break;
+                    }
+                }
+                if (index == -1) index = 0; // 如果列表已满，覆盖第一个
+            }
+
+            canMsgWrapperList[index].updateMessage(message);
+            canMsgWrapperList[index].countPlusOne();
+
+            xSemaphoreGive(canMsgMutex);
         }
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        vTaskDelay(10 / portTICK_PERIOD_MS);
     }
 }

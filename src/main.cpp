@@ -3,21 +3,26 @@
 #include <wifi_tasks.h>
 #include <webserver_tasks.h>
 
-void setup()
-{
+void setup() {
   can_fd_init();
-  twai_init();
+  //twai_init();
   wifi_init();
   webserver_init();
 
-  xTaskCreate(can_fd_receive_task, "can_fd_receive_task", 4096, NULL, 10, NULL);
+  // CANFD 相关任务
+  xTaskCreate(can_fd_receive_task, "can_fd_receive_task", 4096, NULL, 14, NULL); // 优先级提升
   Serial.println("[Main] Created CANFD receive service");
-  xTaskCreate(can_fd_send_task, "can_fd_send_task", 4096, NULL, 11, NULL);
-  Serial.println("[Main] Created CANFD send service");
-  xTaskCreate(twai_send_task, "twai send task", 4096, NULL, 12, NULL);
-  Serial.println("[Main] Created TWAI send service");
-  xTaskCreate(twai_receive_task, "twai receive task", 4096, NULL, 13, NULL);
-  Serial.println("[Main] Created TWAI receive service");
+  //xTaskCreate(can_fd_send_task, "can_fd_send_task", 4096, NULL, 11, NULL);
+  //Serial.println("[Main] Created CANFD send service");
+  xTaskCreate(can_fd_reset_frequency_task, "Reset Frequency", 2048, NULL, 5, NULL); // 新增
+  Serial.println("[Main] Created CANFD frequency reset service");
+
+  // TWAI 相关任务
+  //xTaskCreate(twai_send_task, "twai send task", 4096, NULL, 12, NULL);
+  //Serial.println("[Main] Created TWAI send service");
+  //xTaskCreate(twai_receive_task, "twai receive task", 4096, NULL, 13, NULL);
+  //Serial.println("[Main] Created TWAI receive service");
+
 }
 
 

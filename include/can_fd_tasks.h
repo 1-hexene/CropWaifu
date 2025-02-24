@@ -7,8 +7,11 @@
 #include <pins.h>
 #include <can_msg_wrapper.h>
 
+void can_fd_reset_frequency_task(void *pvParameters);
 void print_can_fd_message(HardwareSerial* _hardwareSerial, CANFDMessage* canFdMessage);
+CanMsgWrapper* getCanMsgWrapperList();
 void can_fd_init();
+void can_fd_init(uint8_t oscFreq, uint32_t arbitrationBitRate, uint8_t dataBitRatefactor, uint8_t mode);
 void can_fd_send_task(void *);
 void can_fd_receive_task(void *);
 

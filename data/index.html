@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CanWaifu</title>
+    <style>
+        /* 全局样式 */
+        body {
+            font-family: sans-serif; /* 使用系统默认 sans-serif 字体 */
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            color: #6200ee; /* Material Design 主色调 */
+            font-size: 1.5rem; /* 标题改小 */
+            margin-bottom: 20px;
+        }
+
+        /* 加载动画 */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-size: 1.2rem;
+            color: #666;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #6200ee;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 卡片布局 */
+        .card-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .card-id {
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: #6200ee;
+        }
+
+        .card-frequency {
+            font-size: 1rem;
+            color: #666;
+            background: #e0e0e0;
+            padding: 4px 8px;
+            border-radius: 8px;
+        }
+
+        .card-content {
+            font-size: 1rem;
+            color: #444;
+            word-wrap: break-word;
+            margin-bottom: 16px;
+        }
+
+        .card-footer {
+            font-size: 0.875rem;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <h1>CanWaifu</h1>
+    <!-- 加载页面 -->
+    <div class="loading" id="loading">报文正在赶来的路上</div>
+    <!-- 卡片容器 -->
+    <div class="card-container" id="cardContainer" style="display: none;">
+        <!-- 动态生成的卡片会插入到这里 -->
+    </div>
+
+    <script>
+        // 更新页面内容
+        function updateTable() {
+            fetch('/data')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.length > 0) {
+                        // 隐藏加载页面
+                        document.getElementById('loading').style.display = 'none';
+                        document.getElementById('cardContainer').style.display = 'grid';
+
+                        // 生成卡片
+                        let html = '';
+                        data.forEach(msg => {
+                            html += `
+                                <div class="card">
+                                    <div class="card-header">
+                                        <span class="card-id">ID: 0x${msg.id.toString(16)}</span>
+                                        <span class="card-frequency">${msg.frequency} Hz</span>
+                                    </div>
+                                    <div class="card-content">
+                                        <strong>报文内容: </strong> ${msg.data.map(b => b.toString(16).padStart(2, '0')).join(' ')}
+                                    </div>
+                                    <div class="card-footer">
+                                        <strong>长度: </strong> ${msg.len} | <strong>类型: </strong> ${msg.type}
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        document.getElementById('cardContainer').innerHTML = html;
+                    }
+                    else {
+                        document.getElementById('loading').style.display = 'flex';
+                        document.getElementById('cardContainer').style.display = 'none';
+                    }
+                    
+                })
+                .catch(error => {
+                    console.error('Error fetching CAN data:', error);
+                    // 显示加载页面
+                    document.getElementById('loading').style.display = 'flex';
+                    document.getElementById('cardContainer').style.display = 'none';
+                });
+        }
+
+        // 每100ms更新一次
+        setInterval(updateTable, 100);
+    </script>
+</body>
+</html>
