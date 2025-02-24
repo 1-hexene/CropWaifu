@@ -4,6 +4,9 @@
 #include <webserver_tasks.h>
 
 void setup() {
+  Serial.begin(115200);
+  Serial.print("CanWaifu Software Version: ");
+  Serial.println(SW_VER);
   can_fd_init();
   //twai_init();
   wifi_init();

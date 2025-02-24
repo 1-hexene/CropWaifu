@@ -116,7 +116,6 @@ void can_fd_init(uint8_t oscFreq, uint32_t arbitrationBitRate, uint8_t dataBitRa
 {
     pinMode(8, OUTPUT);
     digitalWrite(8, 0);
-    Serial.begin(115200);
 
     SPI2.begin(SOFT_SCK_PIN, SOFT_MISO_PIN, SOFT_MOSI_PIN);
     SPI2.setFrequency(20000000);
