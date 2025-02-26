@@ -8,7 +8,7 @@ void setup() {
   Serial.print("CanWaifu Software Version: ");
   Serial.println(SW_VER);
   can_fd_init();
-  //twai_init();
+  twai_init();
   wifi_init();
   webserver_init();
 
@@ -21,10 +21,10 @@ void setup() {
   Serial.println("[Main] Created CANFD frequency reset service");
 
   // TWAI 相关任务
-  //xTaskCreate(twai_send_task, "twai send task", 4096, NULL, 12, NULL);
-  //Serial.println("[Main] Created TWAI send service");
-  //xTaskCreate(twai_receive_task, "twai receive task", 4096, NULL, 13, NULL);
-  //Serial.println("[Main] Created TWAI receive service");
+  xTaskCreate(twai_send_task, "twai send task", 4096, NULL, 12, NULL);
+  Serial.println("[Main] Created TWAI send service");
+  xTaskCreate(twai_receive_task, "twai receive task", 4096, NULL, 13, NULL);
+  Serial.println("[Main] Created TWAI receive service");
 
 }
 
