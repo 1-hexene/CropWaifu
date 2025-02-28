@@ -19,6 +19,7 @@
 
 #define MCP2518FD_CHIP_SELECT 10 
 #define PIN_CANFD_STDBY    8
+#define PIN_MCP2518_INT    4
 
 /* TWAI Pins */
 #define PIN_TWAI_RX        0

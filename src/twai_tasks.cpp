@@ -3,8 +3,10 @@
 static unsigned twaiSendDate = 0;
 static unsigned twaiSentCount = 0;
 static unsigned twaiReceivedCount = 0;
+static unsigned char twaiPayload[8] = {0x1,0x1,0x4,0x5,0x1,0x4,0x19,0x19};
 
-void print_twai_message(HardwareSerial *_hardwareSerial, CanFrame *canFrame, bool direction_is_send)
+template <typename T>
+void print_twai_message(const T *_hardwareSerial, CanFrame *canFrame, bool direction_is_send)
 {
 #ifdef PRINT_CAN_MSGS
     if (direction_is_send)
@@ -90,6 +92,14 @@ void twai_send_task(void *pvParameters)
     message.identifier = TWAI_MSG_ID;
     message.extd = 0;
     message.data_length_code = 8;
+    message.data[0] = 0x11;
+    message.data[1] = 0x45;
+    message.data[2] = 0x14;
+    message.data[3] = 0x19;
+    message.data[4] = 0x19;
+    message.data[5] = 0x8;
+    message.data[6] = 0x1;
+    message.data[7] = 0x0;
     while (1)
     {
         if (ESP32Can.writeFrame(message))
