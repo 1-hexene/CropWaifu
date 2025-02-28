@@ -1,6 +1,4 @@
 <img width=400 src=https://github.com/user-attachments/assets/b0dbea76-5c29-4e3c-a0da-db2657e4a94c />
-
-# CanWaifu
 ![GitHub last commit (branch)](https://img.shields.io/github/last-commit/1-hexene/CanWaifu/main?display_timestamp=committer&style=flat)
 [![State-of-the-art Shitcode](https://img.shields.io/static/v1?label=State-of-the-art&message=Shitcode&color=7B5804)](https://github.com/trekhleb/state-of-the-art-shitcode)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
