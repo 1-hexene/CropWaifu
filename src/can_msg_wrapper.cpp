@@ -4,17 +4,21 @@ CANFDMessage CanMsgWrapper::getCanFdMsgContent() {
     return canFdMsg;
 }
 
-uint8_t CanMsgWrapper::resetCount() {
+uint16_t CanMsgWrapper::resetCount() {
     lastFrequency = frequency; // 清零前保存当前频率
     frequency = 0;
     return frequency;
 }
 
-uint8_t CanMsgWrapper::getFrequency() {
+uint16_t CanMsgWrapper::getCurrentFrequency() {
+    return frequency; // 返回上一次清零前的频率
+}
+
+uint16_t CanMsgWrapper::getFrequency() {
     return lastFrequency; // 返回上一次清零前的频率
 }
 
-uint8_t CanMsgWrapper::countPlusOne() {
+uint16_t CanMsgWrapper::countPlusOne() {
     frequency++;
     return frequency;
 }

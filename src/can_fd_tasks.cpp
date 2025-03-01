@@ -180,23 +180,23 @@ void can_fd_receive_task(void *pvParameters)
             {
                 if (canMsgWrapperList[i].getCanFdMsgContent().id == message.id)
                 {
+                    //Serial.println("[FDCAN] Overwriting existing message.");
                     index = i;
+                    break;
+                }
+
+                //如果这一条消息的频率为0，而且一秒前也是0，那就覆盖它
+                if (!(canMsgWrapperList[i].getCurrentFrequency() | canMsgWrapperList[i].getFrequency()))
+                {
+                    index = i;
+                    Serial.println("[FDCAN] Detected a new message. ");
                     break;
                 }
             }
 
-            if (index == -1)
-            { // 如果未找到相同 ID 的报文
-                for (int i = 0; i < 63; i++)
-                {
-                    if (canMsgWrapperList[i].getFrequency() == 0)
-                    {
-                        index = i;
-                        break;
-                    }
-                }
-                if (index == -1)
-                    index = 0; // 如果列表已满，覆盖第一个
+            if (index == -1) // 如果列表已满，覆盖第一个
+            { 
+                index = 0; 
             }
 
             canMsgWrapperList[index].updateMessage(message);
