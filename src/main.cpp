@@ -4,6 +4,7 @@
 #include <webserver_tasks.h>
 
 void setup() {
+  vTaskDelay(1000/portTICK_PERIOD_MS);
   Serial.begin(115200);
   Serial.print("CanWaifu Software Version: ");
   Serial.println(SW_VER);

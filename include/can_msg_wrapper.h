@@ -7,13 +7,14 @@ class CanMsgWrapper
 {
 private:
     CANFDMessage canFdMsg;
-    uint8_t frequency;         // 当前频率
-    uint8_t lastFrequency;     // 上一次清零前的频率
+    uint16_t frequency;         // 当前频率
+    uint16_t lastFrequency;     // 上一次清零前的频率
 public:
     CANFDMessage getCanFdMsgContent();
-    uint8_t resetCount();
-    uint8_t getFrequency();    // 返回上一次清零前的频率
-    uint8_t countPlusOne();
+    uint16_t resetCount();
+    uint16_t getFrequency();    // 返回上一次清零前的频率
+    uint16_t getCurrentFrequency();
+    uint16_t countPlusOne();
     void updateMessage(const CANFDMessage &msg); // 新增方法
 };
 
