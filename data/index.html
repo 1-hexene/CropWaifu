@@ -19,31 +19,40 @@
         .header {
             display: flex;
             justify-content: center;
-            align-items:flex-end;
-            gap: 10px;
+            align-items: center;
+            /* 如果需要，可以设定高度 */
+            /* height: 100px; */
+        }
+
+        .header_wrapper {
+            position: relative;
+            /* 用于作为绝对定位的参照 */
+            display: inline-block;
         }
 
         .header_text {
-            display: inline-block;
-            text-align: center;
             font-weight: bold;
             color: #004a7c;
-            /* Material Design 主色调 */
             font-size: 1.5rem;
-            /* 标题改小 */
-            margin-bottom: 5px;
+            text-align: center;
+            /* 可根据需要调整内边距或外边距 */
         }
 
         .ver {
-            display: inline-block;
-            text-align: center;
-            color: #fff;
+            display: none;
+            position: absolute;
+            left: 105%;
+            bottom: 80%;
+            transform: translate(0, 50%);
+            width: auto;
+            white-space: nowrap;
             font-size: 0.8rem;
+            color: #fff;
             background: #005691;
             padding: 4px 8px;
             border-radius: 8px;
-            margin-bottom: 20px;
         }
+
 
         /* 加载动画 */
         .loading {
@@ -135,9 +144,12 @@
 
 <body>
     <div class="header">
-        <div class="header_text">CanWaifu</div>
-        <div class="ver">测试版</div>
+        <div class="header_wrapper">
+            <div class="header_text">CanWaifu</div>
+            <div class="ver" id="canWaifuSWVer">v0.2-beta2</div>
+        </div>
     </div>
+
 
 
     <!-- 加载页面 -->
@@ -184,7 +196,7 @@
                         document.getElementById('cardContainer').innerHTML = html;
                     }
                     else {
-                        document.getElementById('loading').innerHTML="正在搜索报文..."
+                        document.getElementById('loading').innerHTML = "正在搜索报文...";
                         document.getElementById('loading').style.display = 'flex';
                         document.getElementById('cardContainer').style.display = 'none';
                     }
@@ -193,12 +205,25 @@
                 .catch(error => {
                     console.error('Error fetching CAN data:', error);
                     // 显示加载页面
-                    document.getElementById('loading').innerHTML="失去网络连接..."
+                    document.getElementById('loading').innerHTML = "失去网络连接...";
                     document.getElementById('loading').style.display = 'flex';
                     document.getElementById('cardContainer').style.display = 'none';
                 });
         }
 
+        document.addEventListener('DOMContentLoaded', function () {
+            fetch('/version')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch /version.');
+                    }
+                    return response.text();
+                })
+                .then(data => {
+                    document.getElementById('canWaifuSWVer').innerHTML = data;
+                    document.getElementById('canWaifuSWVer').style.display = 'flex';
+                })
+        });
         // 每100ms更新一次
         setInterval(updateTable, 100);
     </script>
