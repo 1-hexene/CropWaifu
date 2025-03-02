@@ -16,6 +16,9 @@ void webserver_init()
     webServer.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
                  { request->send(200, "text/html", index_html_content); });
 
+    webServer.on("/version", HTTP_GET, [](AsyncWebServerRequest *request)
+                 { request->send(200, "text/html", SW_VER); });
+
     webServer.on("/data", HTTP_GET, [](AsyncWebServerRequest *request)
                  {
         JsonDocument doc;
