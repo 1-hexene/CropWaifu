@@ -68,8 +68,8 @@ void print_twai_message(const T *_hardwareSerial, CanFrame *canFrame, bool direc
 
 void twai_init()
 {
-    pinMode(PIN_TWAI_STDBY, OUTPUT);
-    digitalWrite(PIN_TWAI_STDBY, LOW);
+    pinMode(PIN_TWAI_STATUS, OUTPUT);
+    digitalWrite(PIN_TWAI_STATUS, LOW);
 
     ESP32Can.setPins(PIN_TWAI_TX, PIN_TWAI_RX);
     ESP32Can.setRxQueueSize(10);
@@ -83,6 +83,7 @@ void twai_init()
     else
     {
         Serial.println("[TWAI] TWAI bus failed!");
+        digitalWrite(PIN_TWAI_STATUS, HIGH);
     }
 }
 
