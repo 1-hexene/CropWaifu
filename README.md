@@ -2,8 +2,9 @@
 
 # CanWaifu
 
-![GitHub last commit (branch)](https://img.shields.io/github/last-commit/1-hexene/CanWaifu/main?display_timestamp=committer&style=flat)
-[![State-of-the-art Shitcode](https://img.shields.io/static/v1?label=State-of-the-art&message=Shitcode&color=7B5804)](https://github.com/trekhleb/state-of-the-art-shitcode)
+![GitHub last commit (branch)](https://img.shields.io/github/last-commit/1-hexene/CanWaifu/develop?display_timestamp=committer&style=flat)
+![GitHub latest release](https://img.shields.io/github/v/release/1-hexene/CanWaifu)
+
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 ![BNGU LAB Badge](https://badge.bngu.io/badge.svg)
 ![Espressif](https://img.shields.io/badge/espressif-E7352C.svg?style=flat&logo=espressif&logoColor=white)
