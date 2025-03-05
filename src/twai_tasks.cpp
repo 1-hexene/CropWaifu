@@ -66,7 +66,7 @@ void print_twai_message(const T *_hardwareSerial, CanFrame *canFrame, bool direc
 #endif
 }
 
-void twai_init()
+canwaifu_status twai_init()
 {
     pinMode(PIN_TWAI_STATUS, OUTPUT);
     digitalWrite(PIN_TWAI_STATUS, LOW);
@@ -79,11 +79,12 @@ void twai_init()
     if (ESP32Can.begin())
     {
         Serial.println("[TWAI] TWAI bus started!");
+        return CANWAIFU_OK;
     }
     else
     {
         Serial.println("[TWAI] TWAI bus failed!");
-        digitalWrite(PIN_TWAI_STATUS, HIGH);
+        return CANWAIFU_ERR;
     }
 }
 

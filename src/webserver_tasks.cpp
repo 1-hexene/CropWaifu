@@ -5,7 +5,7 @@ extern SemaphoreHandle_t canMsgMutex;
 AsyncWebServer webServer(80);
 String index_html_content;
 
-void webserver_init()
+canwaifu_status webserver_init()
 {
     SPIFFS.begin(true);
 
@@ -56,4 +56,5 @@ void webserver_init()
         request->send(200, "application/json", json); });
 
     webServer.begin();
+    return CANWAIFU_OK;
 }

@@ -2,8 +2,9 @@
 #define WIFI_TASKS_H
 
 #include <Arduino.h>
+#include <pins.h>
 #include <WiFi.h>
 
-void wifi_init();
+canwaifu_status wifi_init();
 
 #endif

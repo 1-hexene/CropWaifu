@@ -107,9 +107,9 @@ CANFDMessage getCanFdMsgFromList(uint8_t msgIndex)
 /*
  * @brief 无参数的初始化canfd函数 以标准can模式、1MBit/s、40MHz二分频启动。
  */
-void can_fd_init()
+uint8_t can_fd_init()
 {
-    can_fd_init(7, 1 * 1000 * 1000, 1, 6);
+    return can_fd_init(7, 1 * 1000 * 1000, 1, 6);
 }
 
 /*
@@ -119,7 +119,7 @@ void can_fd_init()
  * @param dataBitRatefactor 数据比特率乘数。是仲裁部分比特率和数据部分比特率的比值。例如设为8就是8MBit/s。需要注意的是，如果工作在标准can模式下，此项要设为1。
  * @param mode MCP2518FD的工作模式。0: FD模式; 6: 标准Can模式; 3: 仅监听模式。不要设置为其他值。
  */
-void can_fd_init(uint8_t oscFreq, uint32_t arbitrationBitRate, uint8_t dataBitRatefactor, uint8_t mode)
+uint8_t can_fd_init(uint8_t oscFreq, uint32_t arbitrationBitRate, uint8_t dataBitRatefactor, uint8_t mode)
 {
     pinMode(PIN_CANFD_STATUS, OUTPUT);
     digitalWrite(PIN_CANFD_STATUS, 0);
@@ -127,11 +127,7 @@ void can_fd_init(uint8_t oscFreq, uint32_t arbitrationBitRate, uint8_t dataBitRa
     SPI2.begin(SOFT_SCK_PIN, SOFT_MISO_PIN, SOFT_MOSI_PIN);
     SPI2.setFrequency(20000000);
 
-    /* ACAN2517FDSettings settings(
-        ACAN2517FDSettings::OSC_40MHz,
-        1000 * 1000, // DesiredArbitrationBitRate
-        DataBitRateFactor::x8); */
-
+    // Acan2517fd 设置
     ACAN2517FDSettings settings(
         ACAN2517FDSettings::Oscillator(oscFreq),
         arbitrationBitRate, // DesiredArbitrationBitRate
@@ -143,11 +139,13 @@ void can_fd_init(uint8_t oscFreq, uint32_t arbitrationBitRate, uint8_t dataBitRa
     if (!errorCode)
     {
         Serial.println("[MCP2518FD][Init] OK.");
+        return CANWAIFU_OK;
     }
     else
     {
         Serial.println(errorCode);
         digitalWrite(PIN_CANFD_STATUS, 1);
+        return CANWAIFU_ERR;
     }
 }
 
@@ -190,7 +188,7 @@ void can_fd_receive_task(void *pvParameters)
                 if (!(canMsgWrapperList[i].getCurrentFrequency() | canMsgWrapperList[i].getFrequency()))
                 {
                     index = i;
-                    Serial.println("[FDCAN] Detected a new message. ");
+                    Serial.println("[FDCAN] Detected a new ID. ");
                     break;
                 }
             }
