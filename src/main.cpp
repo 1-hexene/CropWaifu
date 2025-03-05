@@ -18,10 +18,12 @@ void setup()
   }
   else
   {
-    //全都正常的时候再注册服务
-#ifdef HW_VER_1C
-    digitalWrite(PIN_LED_B, HIGH);
-#endif
+    //全都正常的时候打开蓝灯
+    #ifdef HW_VER_1C
+      digitalWrite(PIN_LED_B, HIGH);
+    #endif
+    
+    //开始注册服务
     // CANFD 相关任务
     xTaskCreate(can_fd_receive_task, "can_fd_receive_task", 8192, NULL, 14, NULL); // 优先级提升
     Serial.println("[Main] Created CANFD receive service");
