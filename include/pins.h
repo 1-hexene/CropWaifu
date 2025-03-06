@@ -11,7 +11,12 @@ enum canwaifu_status{
 
 /* MCP2518 PINS */
 #define MCP2518FD_CHIP_SELECT 10
+
+#ifdef HW_VER_1Ar2
+#define PIN_MCP2518_INT 5
+#else
 #define PIN_MCP2518_INT 4
+#endif
 
 /* TWAI Pins */
 #define PIN_TWAI_RX 0
@@ -19,6 +24,16 @@ enum canwaifu_status{
 
 /* BSP Pins */
 #ifdef HW_VER_1A // 没飞过线的
+#define SOFT_SCK_PIN 6
+#define SOFT_MISO_PIN 7
+#define SOFT_MOSI_PIN 2
+#define PIN_CANFD_STATUS 8
+#define PIN_TWAI_STATUS 3
+#define PIN_WIFI_STATUS 8
+#define PIN_LED_ERR 8
+#endif
+
+#ifdef HW_VER_1Ar2 // 没飞过线的
 #define SOFT_SCK_PIN 6
 #define SOFT_MISO_PIN 7
 #define SOFT_MOSI_PIN 2
