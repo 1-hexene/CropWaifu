@@ -1,6 +1,4 @@
-![](images/logo.png)
-
-# CanWaifu
+# CanWaifu <img src="images/CanWaifu-Waifu.png" width="160px" align="right"/>
 
 ![GitHub last commit (branch)](https://img.shields.io/github/last-commit/1-hexene/CanWaifu/main?display_timestamp=committer&style=flat)
 [![State-of-the-art Shitcode](https://img.shields.io/static/v1?label=State-of-the-art&message=Shitcode&color=7B5804)](https://github.com/trekhleb/state-of-the-art-shitcode)
@@ -12,7 +10,7 @@
 
 CanWaifu is a CAN FD analyzer based on ESP32, with packets transmitted via Wi-Fi.
 
-![](images/CanWaifu-webui.png)
+# CanWaifu
 
 ## Features
 - 2 Different Channels Ready on board
