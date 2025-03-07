@@ -33,7 +33,7 @@ enum canwaifu_status{
 #define PIN_LED_ERR 8
 #endif
 
-#ifdef HW_VER_1Ar2 // 没飞过线的
+#ifdef HW_VER_1AR2 // 没飞过线的
 #define SOFT_SCK_PIN 6
 #define SOFT_MISO_PIN 7
 #define SOFT_MOSI_PIN 2
