@@ -10,8 +10,6 @@
 
 CanWaifu is a CAN FD analyzer based on ESP32, with packets transmitted via Wi-Fi.
 
-# CanWaifu
-
 ## Features
 - 2 Different Channels Ready on board
 - CAN FD Frames Supported Up to 8Mbit/s
