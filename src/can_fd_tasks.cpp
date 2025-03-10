@@ -25,6 +25,7 @@ void can_fd_reset_frequency_task(void *pvParameters)
         xSemaphoreTake(canMsgMutex, portMAX_DELAY);
         for (int i = 0; i < 63; i++)
         {
+            if(!(canMsgWrapperList[i].getCurrentFrequency() | canMsgWrapperList[i].getFrequency())){ break;} //抄的下面的，如果这一条消息的频率为0，而且一秒前也是0，那后面的就不管了
             canMsgWrapperList[i].resetCount();
         }
         xSemaphoreGive(canMsgMutex);
@@ -193,13 +194,11 @@ void can_fd_receive_task(void *pvParameters)
                 }
             }
 
-            if (index == -1) // 如果列表已满，覆盖第一个
+            if (!(index+1)) // 如果列表已满，直接丢弃
             { 
-                index = 0; 
+                canMsgWrapperList[index].updateMessage(message);
+                canMsgWrapperList[index].countPlusOne();
             }
-
-            canMsgWrapperList[index].updateMessage(message);
-            canMsgWrapperList[index].countPlusOne();
 
             xSemaphoreGive(canMsgMutex);
         }
