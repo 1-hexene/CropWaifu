@@ -6,16 +6,10 @@ static unsigned gReceivedCount = 0;
 
 static SPIClass SPI2(FSPI);
 static ACAN2517FD can2(MCP2518FD_CHIP_SELECT, SPI2, PIN_MCP2518_INT);
-static CanMsgWrapper canMsgWrapperList[63];
 
-SemaphoreHandle_t canMsgMutex = xSemaphoreCreateMutex();
 SemaphoreHandle_t canMsgReceive = xSemaphoreCreateBinary();
+extern SemaphoreHandle_t canMsgMutex;
 
-
-CanMsgWrapper *getCanMsgWrapperList()
-{
-    return canMsgWrapperList;
-}
 
 // 每秒清零 frequency 的任务
 void can_fd_reset_frequency_task(void *pvParameters)
@@ -23,10 +17,13 @@ void can_fd_reset_frequency_task(void *pvParameters)
     while (1)
     {
         xSemaphoreTake(canMsgMutex, portMAX_DELAY);
-        for (int i = 0; i < 63; i++)
+        for (int i = 0; i < getCanMsgWrapperListLen(); i++)
         {
-            if(!(canMsgWrapperList[i].getCurrentFrequency() | canMsgWrapperList[i].getFrequency())){ break;} //抄的下面的，如果这一条消息的频率为0，而且一秒前也是0，那后面的就不管了
-            canMsgWrapperList[i].resetCount();
+            if (!(getCanMsgWrapperList()[i].getCurrentFrequency() | getCanMsgWrapperList()[i].getFrequency()))
+            {
+                break;
+            } // 抄的下面的，如果这一条消息的频率为0，而且一秒前也是0，那后面的就不管了, 因为接收任务会把新消息写进这个消息里面
+            getCanMsgWrapperList()[i].resetCount();
         }
         xSemaphoreGive(canMsgMutex);
         vTaskDelay(1000 / portTICK_PERIOD_MS); // 每秒执行一次
@@ -102,7 +99,7 @@ void print_can_fd_message(const T _hardwareSerial, CANFDMessage *canFdMessage, b
 
 CANFDMessage getCanFdMsgFromList(uint8_t msgIndex)
 {
-    return (canMsgWrapperList + msgIndex)->getCanFdMsgContent();
+    return (getCanMsgWrapperList() + msgIndex)->getCanFdMsgContent();
 }
 
 /*
@@ -173,34 +170,36 @@ void can_fd_receive_task(void *pvParameters)
     {
         if (xSemaphoreTake(canMsgReceive, portMAX_DELAY) == pdTRUE)
         {
-            xSemaphoreTake(canMsgMutex, portMAX_DELAY);
-            can2.receive(message);
-            int index = -1;
-            for (int i = 0; i < 63; i++)
+            if (xSemaphoreTake(canMsgMutex, portMAX_DELAY) == pdTRUE)
             {
-                if (canMsgWrapperList[i].getCanFdMsgContent().id == message.id)
+                can2.receive(message);
+                int index = -1;
+                for (int i = 0; i < 63; i++)
                 {
-                    //Serial.println("[FDCAN] Overwriting existing message.");
-                    index = i;
-                    break;
+                    if (getCanMsgWrapperList()[i].getCanFdMsgContent().id == message.id)
+                    {
+                        // Serial.println("[FDCAN] Overwriting existing message.");
+                        index = i;
+                        break;
+                    }
+
+                    // 如果这一条消息的频率为0，而且一秒前也是0，那就覆盖它
+                    if (!(getCanMsgWrapperList()[i].getCurrentFrequency() | getCanMsgWrapperList()[i].getFrequency()))
+                    {
+                        index = i;
+                        Serial.println("[FDCAN] Detected a new ID. ");
+                        break;
+                    }
                 }
 
-                //如果这一条消息的频率为0，而且一秒前也是0，那就覆盖它
-                if (!(canMsgWrapperList[i].getCurrentFrequency() | canMsgWrapperList[i].getFrequency()))
+                if (index + 1) // 如果列表已满，直接丢弃
                 {
-                    index = i;
-                    Serial.println("[FDCAN] Detected a new ID. ");
-                    break;
+                    getCanMsgWrapperList()[index].updateMessage(message);
+                    getCanMsgWrapperList()[index].countPlusOne();
                 }
-            }
 
-            if (!(index+1)) // 如果列表已满，直接丢弃
-            { 
-                canMsgWrapperList[index].updateMessage(message);
-                canMsgWrapperList[index].countPlusOne();
-            }
-
-            xSemaphoreGive(canMsgMutex);
+                xSemaphoreGive(canMsgMutex);
+            };
         }
     }
 }
@@ -208,10 +207,11 @@ void can_fd_receive_task(void *pvParameters)
 void IRAM_ATTR can_fd_ISR()
 {
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-    //Serial.println("[MCP2518FD][Int] Received interrupt");
+    // Serial.println("[MCP2518FD][Int] Received interrupt");
     can2.isr(); // 库的中断处理
     xSemaphoreGiveFromISR(canMsgReceive, &xHigherPriorityTaskWoken);
-    if (xHigherPriorityTaskWoken == pdTRUE) {
+    if (xHigherPriorityTaskWoken == pdTRUE)
+    {
         portYIELD_FROM_ISR();
-      }
+    }
 }

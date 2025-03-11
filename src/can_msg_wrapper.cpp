@@ -1,5 +1,8 @@
 #include <can_msg_wrapper.h>
 
+static CanMsgWrapper canMsgWrapperList[63];
+SemaphoreHandle_t canMsgMutex = xSemaphoreCreateMutex();
+
 CANFDMessage CanMsgWrapper::getCanFdMsgContent() {
     return canFdMsg;
 }
@@ -25,4 +28,13 @@ uint16_t CanMsgWrapper::countPlusOne() {
 
 void CanMsgWrapper::updateMessage(const CANFDMessage &msg) {
     canFdMsg = msg; // 更新报文内容
+}
+
+CanMsgWrapper *getCanMsgWrapperList()
+{
+    return canMsgWrapperList;
+}
+
+uint8_t getCanMsgWrapperListLen(){
+    return sizeof(canMsgWrapperList)/sizeof(canMsgWrapperList[0]);
 }

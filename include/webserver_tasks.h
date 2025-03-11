@@ -3,9 +3,10 @@
 
 #define HTTP_SERVER_PORT 80
 #include <ESPAsyncWebServer.h> 
+#include <pins.h>
 #include <SPIFFS.h>
 #include <ArduinoJson.h>
-#include <can_fd_tasks.h>
+#include <can_msg_wrapper.h>
 
 canwaifu_status webserver_init();
 void webserver_post_task(void* pvParameters);

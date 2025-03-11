@@ -9,7 +9,6 @@
 
 void can_fd_reset_frequency_task(void *pvParameters);
 void print_can_fd_message(HardwareSerial* _hardwareSerial, CANFDMessage* canFdMessage);
-CanMsgWrapper* getCanMsgWrapperList();
 uint8_t can_fd_init();
 uint8_t can_fd_init(uint8_t oscFreq, uint32_t arbitrationBitRate, uint8_t dataBitRatefactor, uint8_t mode);
 void can_fd_send_task(void *);

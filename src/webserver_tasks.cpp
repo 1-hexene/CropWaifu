@@ -18,9 +18,7 @@ canwaifu_status webserver_init()
                  { request->send(200, "text/html", SW_VER); });
     
     //post方法接口
-    webServer.on("/post", HTTP_POST, [](AsyncWebServerRequest * request){
-
-    });
+    //webServer.on("/post", HTTP_POST, [](AsyncWebServerRequest * request){});
 
     //Can报文数据接口
     webServer.on("/data", HTTP_GET, [](AsyncWebServerRequest *request){
@@ -31,7 +29,7 @@ canwaifu_status webserver_init()
         xSemaphoreTake(canMsgMutex, portMAX_DELAY);
         for (int i = 0; i < 63; i++) {
             CanMsgWrapper msgWrapper = getCanMsgWrapperList()[i];
-            if (msgWrapper.getFrequency() == 0) continue; // 跳过未使用的条目
+            if (!(msgWrapper.getFrequency()| msgWrapper.getCurrentFrequency())) break; //查到嗝屁的报文就直接跳出循环，报文处理那边应该能解决好的, 如果这一条消息的频率为0，而且一秒前也是0，那后面的就不管了
 
             CANFDMessage msg = msgWrapper.getCanFdMsgContent();
             JsonObject obj = array.add<JsonObject>();

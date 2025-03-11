@@ -18,4 +18,7 @@ public:
     void updateMessage(const CANFDMessage &msg); // 新增方法
 };
 
+CanMsgWrapper *getCanMsgWrapperList();
+uint8_t getCanMsgWrapperListLen();
+
 #endif
