@@ -9,18 +9,22 @@ canwaifu_status webserver_init()
 {
     SPIFFS.begin(true);
 
-    File file = SPIFFS.open("/index.html");
-    index_html_content = file.readString();
-    file.close();
-
+    //主文件接口
     webServer.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
-                 { request->send(200, "text/html", index_html_content); });
+                 { request->send(SPIFFS, "/index.html", String(), false); });
 
+    //版本号接口
     webServer.on("/version", HTTP_GET, [](AsyncWebServerRequest *request)
                  { request->send(200, "text/html", SW_VER); });
+    
+    //post方法接口
+    webServer.on("/post", HTTP_POST, [](AsyncWebServerRequest * request){
 
-    webServer.on("/data", HTTP_GET, [](AsyncWebServerRequest *request)
-                 {
+    });
+
+    //Can报文数据接口
+    webServer.on("/data", HTTP_GET, [](AsyncWebServerRequest *request){
+
         JsonDocument doc;
         JsonArray array = doc.to<JsonArray>();
 
@@ -42,7 +46,6 @@ canwaifu_status webserver_init()
                 default: obj["type"] = "UNKNOWN"; break;
             }
 
-            //JsonArray data = obj.createNestedArray("data");
             JsonArray data = obj["data"].to<JsonArray>();
             for (int j = 0; j < msg.len; j++) {
                 data.add(msg.data[j]);
