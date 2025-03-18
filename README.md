@@ -1,7 +1,9 @@
 # CanWaifu <img src="images/CanWaifu-Waifu.png" width="250px" align="right"/>
 
 ![GitHub last commit (branch)](https://img.shields.io/github/last-commit/1-hexene/CanWaifu/develop?display_timestamp=committer&style=flat)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/1-hexene/canwaifu/.github%2Fworkflows%2Fbuild.yml?branch=develop)
 ![GitHub latest release](https://img.shields.io/github/v/release/1-hexene/CanWaifu)
+
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 ![BNGU LAB Badge](https://badge.bngu.io/badge.svg)
