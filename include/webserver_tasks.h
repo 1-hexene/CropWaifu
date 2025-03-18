@@ -11,5 +11,6 @@
 canwaifu_status webserver_init();
 void webserver_post_task(void* pvParameters);
 void webserver_get_task(void* pvParameters);
+void webServerOnData(AsyncWebServerRequest *request);
 
 #endif

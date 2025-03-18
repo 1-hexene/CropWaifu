@@ -14,5 +14,6 @@ uint8_t can_fd_init(uint8_t oscFreq, uint32_t arbitrationBitRate, uint8_t dataBi
 void can_fd_send_task(void *);
 void can_fd_receive_task(void *);
 void IRAM_ATTR can_fd_ISR();
+void IRAM_ATTR can_fd_reset_freq_ISR();
 
 #endif

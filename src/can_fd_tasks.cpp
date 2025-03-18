@@ -6,27 +6,32 @@ static unsigned gReceivedCount = 0;
 
 static SPIClass SPI2(FSPI);
 static ACAN2517FD can2(MCP2518FD_CHIP_SELECT, SPI2, PIN_MCP2518_INT);
-
+hw_timer_t *timer = NULL;
 SemaphoreHandle_t canMsgReceive = xSemaphoreCreateBinary();
+SemaphoreHandle_t canFreqReset = xSemaphoreCreateBinary();
 extern SemaphoreHandle_t canMsgMutex;
-
 
 // 每秒清零 frequency 的任务
 void can_fd_reset_frequency_task(void *pvParameters)
 {
     while (1)
     {
-        xSemaphoreTake(canMsgMutex, portMAX_DELAY);
-        for (int i = 0; i < getCanMsgWrapperListLen(); i++)
+        if (xSemaphoreTake(canFreqReset, portMAX_DELAY) == pdTRUE) // 得到计时器中断信号
         {
-            if (!(getCanMsgWrapperList()[i].getCurrentFrequency() | getCanMsgWrapperList()[i].getFrequency()))
+            if (xSemaphoreTake(canMsgMutex, 10 / portTICK_PERIOD_MS) == pdTRUE) // 得到互斥锁
             {
-                break;
-            } // 抄的下面的，如果这一条消息的频率为0，而且一秒前也是0，那后面的就不管了, 因为接收任务会把新消息写进这个消息里面
-            getCanMsgWrapperList()[i].resetCount();
+                // Serial.println("[CanFD] [Reset] Now has the lock.");
+                for (int i = 0; i < getCanMsgWrapperListLen(); i++)
+                {
+                    getCanMsgWrapperList()[i].resetCount();
+                    if (getCanMsgWrapperList()[i].getCurrentFrequency() == 0 && getCanMsgWrapperList()[i].getFrequency() == 0)
+                    {
+                        break;
+                    } // 如果这一条消息的频率为0，而且一秒前也是0，那后面的就不管了
+                }
+                xSemaphoreGive(canMsgMutex);
+            }
         }
-        xSemaphoreGive(canMsgMutex);
-        vTaskDelay(1000 / portTICK_PERIOD_MS); // 每秒执行一次
     }
 }
 
@@ -119,11 +124,19 @@ uint8_t can_fd_init()
  */
 uint8_t can_fd_init(uint8_t oscFreq, uint32_t arbitrationBitRate, uint8_t dataBitRatefactor, uint8_t mode)
 {
+    // 初始化信号灯
     pinMode(PIN_CANFD_STATUS, OUTPUT);
     digitalWrite(PIN_CANFD_STATUS, 0);
 
+    // SPI初始化
     SPI2.begin(SOFT_SCK_PIN, SOFT_MISO_PIN, SOFT_MOSI_PIN);
     SPI2.setFrequency(20000000);
+
+    // 定时器初始化
+    timer = timerBegin(0, 80, true); // Timer 0, prescaler 80 (1us per tick)
+    timerAttachInterrupt(timer, &can_fd_reset_freq_ISR, true);
+    timerAlarmWrite(timer, 100000, true); // 100 ms interval
+    timerAlarmEnable(timer);              // Enable the alarm
 
     // Acan2517fd 设置
     ACAN2517FDSettings settings(
@@ -170,8 +183,10 @@ void can_fd_receive_task(void *pvParameters)
     {
         if (xSemaphoreTake(canMsgReceive, portMAX_DELAY) == pdTRUE)
         {
-            if (xSemaphoreTake(canMsgMutex, portMAX_DELAY) == pdTRUE)
+            // Serial.println("[CanFD] [Recv] Now has an ISR.");
+            if (xSemaphoreTake(canMsgMutex, 10 / portTICK_PERIOD_MS) == pdTRUE)
             {
+                // Serial.println("[CanFD] [Recv] Now has the Mutex lock.");
                 can2.receive(message);
                 int index = -1;
                 for (int i = 0; i < 63; i++)
@@ -210,6 +225,16 @@ void IRAM_ATTR can_fd_ISR()
     // Serial.println("[MCP2518FD][Int] Received interrupt");
     can2.isr(); // 库的中断处理
     xSemaphoreGiveFromISR(canMsgReceive, &xHigherPriorityTaskWoken);
+    if (xHigherPriorityTaskWoken == pdTRUE)
+    {
+        portYIELD_FROM_ISR();
+    }
+}
+
+void IRAM_ATTR can_fd_reset_freq_ISR()
+{
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    xSemaphoreGiveFromISR(canFreqReset, &xHigherPriorityTaskWoken);
     if (xHigherPriorityTaskWoken == pdTRUE)
     {
         portYIELD_FROM_ISR();
