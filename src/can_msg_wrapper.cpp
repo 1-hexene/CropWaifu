@@ -14,11 +14,11 @@ uint16_t CanMsgWrapper::resetCount() {
 }
 
 uint16_t CanMsgWrapper::getCurrentFrequency() {
-    return frequency * 10; // 返回上一次清零前的频率
+    return frequency; // 返回上一次清零前的频率
 }
 
 uint16_t CanMsgWrapper::getFrequency() {
-    return lastFrequency * 10; // 返回上一次清零前的频率
+    return lastFrequency; // 返回上一次清零前的频率
 }
 
 uint16_t CanMsgWrapper::countPlusOne() {

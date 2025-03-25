@@ -6,9 +6,9 @@ static unsigned gReceivedCount = 0;
 
 static SPIClass SPI2(FSPI);
 static ACAN2517FD can2(MCP2518FD_CHIP_SELECT, SPI2, PIN_MCP2518_INT);
-hw_timer_t *timer = NULL;
+
 SemaphoreHandle_t canMsgReceive = xSemaphoreCreateBinary();
-SemaphoreHandle_t canFreqReset = xSemaphoreCreateBinary();
+extern SemaphoreHandle_t canFreqReset;
 extern SemaphoreHandle_t canMsgMutex;
 
 // 每秒清零 frequency 的任务
@@ -132,12 +132,6 @@ uint8_t can_fd_init(uint8_t oscFreq, uint32_t arbitrationBitRate, uint8_t dataBi
     SPI2.begin(SOFT_SCK_PIN, SOFT_MISO_PIN, SOFT_MOSI_PIN);
     SPI2.setFrequency(20000000);
 
-    // 定时器初始化
-    timer = timerBegin(0, 80, true); // Timer 0, prescaler 80 (1us per tick)
-    timerAttachInterrupt(timer, &can_fd_reset_freq_ISR, true);
-    timerAlarmWrite(timer, 100000, true); // 100 ms interval
-    timerAlarmEnable(timer);              // Enable the alarm
-
     // Acan2517fd 设置
     ACAN2517FDSettings settings(
         ACAN2517FDSettings::Oscillator(oscFreq),
@@ -231,12 +225,3 @@ void IRAM_ATTR can_fd_ISR()
     }
 }
 
-void IRAM_ATTR can_fd_reset_freq_ISR()
-{
-    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-    xSemaphoreGiveFromISR(canFreqReset, &xHigherPriorityTaskWoken);
-    if (xHigherPriorityTaskWoken == pdTRUE)
-    {
-        portYIELD_FROM_ISR();
-    }
-}

@@ -2,6 +2,7 @@
 #include <twai_tasks.h>
 #include <wifi_tasks.h>
 #include <webserver_tasks.h>
+#include <timer_tasks.h>
 
 void setup()
 {
@@ -11,7 +12,7 @@ void setup()
   Serial.print("CanWaifu Software Version: ");
   Serial.println(SW_VER);
   // 如果初始化炸掉了 （其中有一个的结果是1）
-  if (can_fd_init() | twai_init() | wifi_init() | webserver_init())
+  if (can_fd_init() | twai_init() | wifi_init() | webserver_init()| timer_init())
   {
     // 就把红灯打开
     digitalWrite(PIN_LED_ERR, HIGH);
@@ -29,7 +30,7 @@ void setup()
     Serial.println("[Main] Created CANFD receive service");
     // xTaskCreate(can_fd_send_task, "can_fd_send_task", 4096, NULL, 11, NULL);
     // Serial.println("[Main] Created CANFD send service");
-    xTaskCreate(can_fd_reset_frequency_task, "Reset Frequency", 2048, NULL, 5, NULL); // 新增
+    xTaskCreate(can_fd_reset_frequency_task, "Reset Frequency", 2048, NULL, 15, NULL); // 新增
     Serial.println("[Main] Created CANFD frequency reset service");
 
     // TWAI 相关任务
