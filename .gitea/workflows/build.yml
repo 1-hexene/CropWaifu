@@ -26,15 +26,15 @@ jobs:
         
     - name: Install dependencies
       run: |
-        source venv/bin/activate
+        source canwaifu/bin/activate
         pip install platformio
         
     - name: Install platformIO libraries
       run: |
-        source venv/bin/activate
+        source canwaifu/bin/activate
         pio lib install
         
     - name: Run PlatformIO
       run: |
-        source venv/bin/activate
+        source canwaifu/bin/activate
         platformio run
