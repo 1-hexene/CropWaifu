@@ -1,6 +1,6 @@
 /* 定义引脚头文件 */
-/* Autho : Bababoi */
-/* Date  : 18 Feb 2025 */
+/* Author : Bababoi */
+/* Date   : 18 Feb 2025 */
 #ifndef PINS_H
 #define PINS_H
 
@@ -50,7 +50,7 @@ enum canwaifu_status{
 #define PIN_MCP2518_INT 4
 #endif
 
-#ifdef HW_VER_1C // 28/02/2025 船新版本
+#ifdef HW_VER_1C // 28/02/2025 新版本
 #define SOFT_SCK_PIN 6
 #define SOFT_MISO_PIN 2
 #define SOFT_MOSI_PIN 7
