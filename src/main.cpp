@@ -48,13 +48,7 @@ void loop()
 
 void led_setup()
 {
-#ifdef HW_VER_1A
-  pinMode(PIN_CANFD_STATUS, OUTPUT);
-  pinMode(PIN_TWAI_STATUS, OUTPUT);
-  pinMode(PIN_WIFI_STATUS, OUTPUT);
-#endif
-
-#ifdef HW_VER_1B
+#if defined(HW_VER_1A) || defined(HW_VER_1AR2) || defined(HW_VER_1B)
   pinMode(PIN_CANFD_STATUS, OUTPUT);
   pinMode(PIN_TWAI_STATUS, OUTPUT);
   pinMode(PIN_WIFI_STATUS, OUTPUT);
