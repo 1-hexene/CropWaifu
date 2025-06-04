@@ -1,7 +1,10 @@
 #include <can_msg_wrapper.h>
 
 static CanMsgWrapper canMsgWrapperList[63];
+static CanMsgWrapper twaiMsgWrapperList[63];
+
 SemaphoreHandle_t canMsgMutex = xSemaphoreCreateMutex();
+SemaphoreHandle_t twaiMSgMutex = xSemaphoreCreateMutex();
 
 CANFDMessage CanMsgWrapper::getCanFdMsgContent() {
     return canFdMsg;
