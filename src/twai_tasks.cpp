@@ -6,7 +6,7 @@ static unsigned twaiReceivedCount = 0;
 static unsigned char twaiPayload[8] = {0x1,0x1,0x4,0x5,0x1,0x4,0x19,0x19};
 
 template <typename T>
-void print_twai_message(const T *_hardwareSerial, CanFrame *canFrame, bool direction_is_send)
+void print_twai_message(const T _hardwareSerial, CanFrame *canFrame, bool direction_is_send)
 {
 #ifdef PRINT_CAN_MSGS
     if (direction_is_send)

@@ -35,18 +35,19 @@ void webServerOnData(AsyncWebServerRequest *request)
 
     if (xSemaphoreTake(canMsgMutex, 10 / portTICK_PERIOD_MS) == pdTRUE)
     {
+        //Serial.println("[Webserver] Now has the lock.");
         for (int i = 0; i < 63; i++)
         {
             CanMsgWrapper msgWrapper = getCanMsgWrapperList()[i];
-            if (msgWrapper.getFrequency() == 0 || (msgWrapper.getCanFdMsgContent().id == 0 && msgWrapper.getCanFdMsgContent().len == 0))
+            if (msgWrapper.getLastFrequency() == 0 || (msgWrapper.getID() == 0 && msgWrapper.getLength() == 0))
                 break; // 查到嗝屁的报文就直接跳出循环，报文处理那边应该能解决好的, 如果这一条消息的频率为0，而且一秒前也是0，那后面的就不管了
 
-            CANFDMessage msg = msgWrapper.getCanFdMsgContent();
+            // CANFDMessage msg = msgWrapper.getContent();
             JsonObject obj = array.add<JsonObject>();
-            obj["id"] = msg.id;
-            obj["len"] = msg.len;
+            obj["id"] = msgWrapper.getID();
+            obj["len"] = msgWrapper.getLength();
 
-            switch (msg.type)
+            switch (msgWrapper.getType())
             {
             case CANFDMessage::CAN_DATA:
                 obj["type"] = "标准帧";
@@ -66,11 +67,11 @@ void webServerOnData(AsyncWebServerRequest *request)
             }
 
             JsonArray data = obj["data"].to<JsonArray>();
-            for (int j = 0; j < msg.len; j++)
+            for (int j = 0; j < msgWrapper.getLength(); j++)
             {
-                data.add(msg.data[j]);
+                data.add(msgWrapper.getContent()[j]);
             }
-            obj["frequency"] = msgWrapper.getFrequency(); // 返回上一次清零前的频率
+            obj["frequency"] = msgWrapper.getLastFrequency(); // 返回上一次清零前的频率
         }
         xSemaphoreGive(canMsgMutex);
     }

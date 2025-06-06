@@ -1,13 +1,25 @@
 #include <can_msg_wrapper.h>
 
-static CanMsgWrapper canMsgWrapperList[63];
-static CanMsgWrapper twaiMsgWrapperList[63];
+static CanMsgWrapper canMsgWrapperList[64];
+static CanMsgWrapper twaiMsgWrapperList[64];
 
 SemaphoreHandle_t canMsgMutex = xSemaphoreCreateMutex();
 SemaphoreHandle_t twaiMSgMutex = xSemaphoreCreateMutex();
 
-CANFDMessage CanMsgWrapper::getCanFdMsgContent() {
-    return canFdMsg;
+uint8_t* CanMsgWrapper::getContent() {
+    return msgContent;
+}
+
+uint32_t CanMsgWrapper::getID() {
+    return msgID;
+}
+
+uint8_t CanMsgWrapper::getLength() {
+    return length;
+}
+
+uint8_t CanMsgWrapper::getType() {
+    return type;
 }
 
 uint16_t CanMsgWrapper::resetCount() {
@@ -20,7 +32,7 @@ uint16_t CanMsgWrapper::getCurrentFrequency() {
     return frequency; // 返回上一次清零前的频率
 }
 
-uint16_t CanMsgWrapper::getFrequency() {
+uint16_t CanMsgWrapper::getLastFrequency() {
     return lastFrequency; // 返回上一次清零前的频率
 }
 
@@ -30,7 +42,19 @@ uint16_t CanMsgWrapper::countPlusOne() {
 }
 
 void CanMsgWrapper::updateMessage(const CANFDMessage &msg) {
-    canFdMsg = msg; // 更新报文内容
+    memcpy(msgContent, msg.data, sizeof(msg.data));
+    msgID = msg.id;
+    length = msg.len;
+    type = msg.type;
+}
+
+void CanMsgWrapper::updateMessage(const CanFrame &twaiMsg) {
+    memcpy(msgContent, twaiMsg.data, sizeof(twaiMsg.data));
+    msgID = twaiMsg.identifier;
+    length = twaiMsg.data_length_code;
+
+    type = (twaiMsg.rtr)? Type::CAN_REMOTE : Type::CAN_DATA;
+
 }
 
 CanMsgWrapper *getCanMsgWrapperList()
@@ -38,6 +62,11 @@ CanMsgWrapper *getCanMsgWrapperList()
     return canMsgWrapperList;
 }
 
+CanMsgWrapper *getTwaiMsgWrapperList()
+{
+    return twaiMsgWrapperList;
+}
+
 uint8_t getCanMsgWrapperListLen(){
-    return sizeof(canMsgWrapperList)/sizeof(canMsgWrapperList[0]);
+    return sizeof(canMsgWrapperList)/sizeof(canMsgWrapperList[0])  - 1;
 }

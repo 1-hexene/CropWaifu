@@ -16,24 +16,22 @@ void can_fd_reset_frequency_task(void *pvParameters)
 {
     while (1)
     {
-        if (xSemaphoreTake(canMsgReceive, portMAX_DELAY) != pdTRUE)
-            continue;
-        // Serial.println("[CanFD] [Reset] Now has an ISR.");
-
-        if (xSemaphoreTake(canMsgMutex, 10 / portTICK_PERIOD_MS) != pdTRUE)
-            continue;
-        // Serial.println("[CanFD] [Reset] Now has the lock.");
-
-        for (int i = 0; i < getCanMsgWrapperListLen(); i++)
+        if (xSemaphoreTake(canFreqReset, portMAX_DELAY) == pdTRUE) // 得到计时器中断信号
         {
-            getCanMsgWrapperList()[i].resetCount();
-            if (getCanMsgWrapperList()[i].getCurrentFrequency() == 0 && getCanMsgWrapperList()[i].getFrequency() == 0)
+            if (xSemaphoreTake(canMsgMutex, 10 / portTICK_PERIOD_MS) == pdTRUE) // 得到互斥锁
             {
-                break;
-            } // 如果这一条消息的频率为0，而且一秒前也是0，那后面的就不管了
+                //Serial.println("[CanFD] [Reset] Now has the lock.");
+                for (int i = 0; i < 63; i++)
+                {
+                    getCanMsgWrapperList()[i].resetCount();
+                    if (getCanMsgWrapperList()[i].getCurrentFrequency() == 0 && getCanMsgWrapperList()[i].getLastFrequency() == 0)
+                    {
+                        break;
+                    } // 如果这一条消息的频率为0，而且一秒前也是0，那后面的就不管了
+                }
+                xSemaphoreGive(canMsgMutex);
+            }
         }
-        xSemaphoreGive(canMsgMutex);
-
     }
 }
 
@@ -104,11 +102,6 @@ void print_can_fd_message(const T _hardwareSerial, CANFDMessage *canFdMessage, b
 #endif
 }
 
-CANFDMessage getCanFdMsgFromList(uint8_t msgIndex)
-{
-    return (getCanMsgWrapperList() + msgIndex)->getCanFdMsgContent();
-}
-
 /*
  * @brief 无参数的初始化canfd函数 以标准can模式、1MBit/s、40MHz二分频启动。
  */
@@ -177,48 +170,41 @@ void can_fd_receive_task(void *pvParameters)
     CANFDMessage message;
     while (true)
     {
-        // Avoid a very deep stack
-        if (xSemaphoreTake(canMsgReceive, portMAX_DELAY) != pdTRUE)
-            continue;
-        // Serial.println("[CanFD] [Recv] Now has an ISR.");
-        
-        if (xSemaphoreTake(canMsgMutex, 10 / portTICK_PERIOD_MS) != pdTRUE)
-            continue;
-        // Serial.println("[CanFD] [Recv] Now has the Mutex lock.");
-
-        can2.receive(message);
-        int index = -1;
-        for (int i = 0; i < 63; i++)
+        if (xSemaphoreTake(canMsgReceive, portMAX_DELAY) == pdTRUE)
         {
-            if (getCanMsgWrapperList()[i].getCanFdMsgContent().id == message.id)
+            //Serial.println("[CanFD] [Recv] Now has an ISR.");
+            if (xSemaphoreTake(canMsgMutex, 10 / portTICK_PERIOD_MS) == pdTRUE)
             {
-                // Serial.println("[FDCAN] Overwriting existing message.");
-                index = i;
-                break;
-            }
+                //Serial.println("[CanFD] [Recv] Now has the Mutex lock.");
+                can2.receive(message);
+                int index = -1;
+                for (int i = 0; i < 63; i++)
+                {
+                    if (getCanMsgWrapperList()[i].getID() == message.id)
+                    {
+                        // Serial.println("[FDCAN] Overwriting existing message.");
+                        index = i;
+                        break;
+                    }
 
-            // 如果这一条消息的频率为0，而且一秒前也是0，那就覆盖它
-            if (!(getCanMsgWrapperList()[i].getCurrentFrequency() | getCanMsgWrapperList()[i].getFrequency()))
-            {
-                index = i;
-                Serial.println("[FDCAN] Detected a new ID. ");
-                break;
-            }
-        }
-        
-        /* 
-        ** 在上面的代码里面，如果找到了相同id的消息，那么就让列表的index变成i，
-        ** 或者没有找到相同id的消息，index也会变成i，此时index最小是0.
-        ** 这一块的逻辑是，如果上面循环没有触发break，那么index只会等于-1.
-        ** 那么就判断index+1是不是0就行了。
-        */
-        if (index + 1) // 如果列表已满，直接丢弃
-        {
-            getCanMsgWrapperList()[index].updateMessage(message);
-            getCanMsgWrapperList()[index].countPlusOne();
-        }
+                    // 如果这一条消息的频率为0，而且一秒前也是0，那就覆盖它
+                    if (!(getCanMsgWrapperList()[i].getCurrentFrequency() | getCanMsgWrapperList()[i].getLastFrequency()))
+                    {
+                        index = i;
+                        Serial.println("[FDCAN] Detected a new ID. ");
+                        break;
+                    }
+                }
 
-        xSemaphoreGive(canMsgMutex);
+                if (index + 1) // 如果列表已满，直接丢弃
+                {
+                    getCanMsgWrapperList()[index].updateMessage(message);
+                    getCanMsgWrapperList()[index].countPlusOne();
+                }
+
+                xSemaphoreGive(canMsgMutex);
+            };
+        }
     }
 }
 
@@ -233,4 +219,3 @@ void IRAM_ATTR can_fd_ISR()
         portYIELD_FROM_ISR();
     }
 }
-
