@@ -16,23 +16,21 @@ void can_fd_reset_frequency_task(void *pvParameters)
 {
     while (1)
     {
-        if (xSemaphoreTake(canFreqReset, portMAX_DELAY) == pdTRUE) // 得到计时器中断信号
+        if (xSemaphoreTake(canFreqReset, portMAX_DELAY) == pdFALSE) // 得到计时器中断信号
+            continue;
+        if (xSemaphoreTake(canMsgMutex, 10 / portTICK_PERIOD_MS) == pdFALSE) // 得到互斥锁
+            continue;
+        //Serial.println("[CanFD] [Reset] Now has the lock.");
+        for (int i = 0; i < 63; i++)
         {
-            if (xSemaphoreTake(canMsgMutex, 10 / portTICK_PERIOD_MS) == pdTRUE) // 得到互斥锁
+            getCanMsgWrapperList()[i].resetCount();
+            if (getCanMsgWrapperList()[i].getCurrentFrequency() == 0 && getCanMsgWrapperList()[i].getLastFrequency() == 0)
             {
-                //Serial.println("[CanFD] [Reset] Now has the lock.");
-                for (int i = 0; i < 63; i++)
-                {
-                    getCanMsgWrapperList()[i].resetCount();
-                    if (getCanMsgWrapperList()[i].getCurrentFrequency() == 0 && getCanMsgWrapperList()[i].getLastFrequency() == 0)
-                    {
-                        break;
-                    } // 如果这一条消息的频率为0，而且一秒前也是0，那后面的就不管了
-                }
-                xSemaphoreGive(canMsgMutex);
-            }
+                break;
+            } // 如果这一条消息的频率为0，而且一秒前也是0，那后面的就不管了
         }
-    }
+        xSemaphoreGive(canMsgMutex);
+}
 }
 
 template <typename T>
@@ -170,41 +168,39 @@ void can_fd_receive_task(void *pvParameters)
     CANFDMessage message;
     while (true)
     {
-        if (xSemaphoreTake(canMsgReceive, portMAX_DELAY) == pdTRUE)
+        if (xSemaphoreTake(canMsgReceive, portMAX_DELAY) == pdFALSE)
+            continue;
+        //Serial.println("[CanFD] [Recv] Now has an ISR.");
+        if (xSemaphoreTake(canMsgMutex, 10 / portTICK_PERIOD_MS) == pdFALSE)
+            continue;
+        //Serial.println("[CanFD] [Recv] Now has the Mutex lock.");
+        can2.receive(message);
+        int index = -1;
+        for (int i = 0; i < 63; i++)
         {
-            //Serial.println("[CanFD] [Recv] Now has an ISR.");
-            if (xSemaphoreTake(canMsgMutex, 10 / portTICK_PERIOD_MS) == pdTRUE)
+            if (getCanMsgWrapperList()[i].getID() == message.id)
             {
-                //Serial.println("[CanFD] [Recv] Now has the Mutex lock.");
-                can2.receive(message);
-                int index = -1;
-                for (int i = 0; i < 63; i++)
-                {
-                    if (getCanMsgWrapperList()[i].getID() == message.id)
-                    {
-                        // Serial.println("[FDCAN] Overwriting existing message.");
-                        index = i;
-                        break;
-                    }
+                // Serial.println("[FDCAN] Overwriting existing message.");
+                index = i;
+                break;
+            }
 
-                    // 如果这一条消息的频率为0，而且一秒前也是0，那就覆盖它
-                    if (!(getCanMsgWrapperList()[i].getCurrentFrequency() | getCanMsgWrapperList()[i].getLastFrequency()))
-                    {
-                        index = i;
-                        Serial.println("[FDCAN] Detected a new ID. ");
-                        break;
-                    }
-                }
-
-                if (index + 1) // 如果列表已满，直接丢弃
-                {
-                    getCanMsgWrapperList()[index].updateMessage(message);
-                    getCanMsgWrapperList()[index].countPlusOne();
-                }
-
-                xSemaphoreGive(canMsgMutex);
-            };
+            // 如果这一条消息的频率为0，而且一秒前也是0，那就覆盖它
+            if (!(getCanMsgWrapperList()[i].getCurrentFrequency() | getCanMsgWrapperList()[i].getLastFrequency()))
+            {
+                index = i;
+                Serial.println("[FDCAN] Detected a new ID. ");
+                break;
+            }
         }
+
+        if (index + 1) // 如果列表已满，直接丢弃
+        {
+            getCanMsgWrapperList()[index].updateMessage(message);
+            getCanMsgWrapperList()[index].countPlusOne();
+        }
+
+        xSemaphoreGive(canMsgMutex);
     }
 }
 
