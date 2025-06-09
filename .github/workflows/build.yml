@@ -8,23 +8,23 @@ on:
 
 jobs:
   build:
-    runs-on: macos-13
+    runs-on: ubuntu-latest
     
     steps:
     - uses: actions/checkout@v4
       with:
         submodules: 'true'
-    
+
     - name: Print CPU info
       run: |
         echo "CPU Model:"
         lscpu | grep 'Model name'
         echo -e "CPU Core Count: \c"
         nproc
-        
+            
     - name: Set up Python
       uses: actions/setup-python@v5
-        
+
     - name: Create and activate virtual environment
       run: |
         python -m venv canwaifu # 解决 pep668
