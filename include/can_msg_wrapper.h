@@ -16,6 +16,8 @@ class CanMsgWrapper
         uint8_t  type;
         uint16_t frequency;         // 当前频率
         uint16_t lastFrequency;     // 上一次清零前的频率
+        bool cacheNextContent = true;
+
     public:
         typedef enum : uint8_t {
             CAN_REMOTE,
@@ -34,6 +36,9 @@ class CanMsgWrapper
         uint16_t getLastFrequency();    // 返回上一次清零前的频率
         uint16_t getCurrentFrequency();
         uint16_t countPlusOne();
+
+        void triggerCacheContent();
+
         void updateMessage(const CANFDMessage &msg); // 新增方法
         void updateMessage(const CanFrame &twaiMsg);
 };

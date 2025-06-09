@@ -4,11 +4,6 @@
 #ifndef PINS_H
 #define PINS_H
 
-enum canwaifu_status{
-    CANWAIFU_OK = 0,
-    CANWAIFU_ERR = 1
-};
-
 /* MCP2518 PINS */
 #define MCP2518FD_CHIP_SELECT 10
 

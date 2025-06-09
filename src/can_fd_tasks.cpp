@@ -10,6 +10,7 @@ static ACAN2517FD can2(MCP2518FD_CHIP_SELECT, SPI2, PIN_MCP2518_INT);
 SemaphoreHandle_t canMsgReceive = xSemaphoreCreateBinary();
 extern SemaphoreHandle_t canFreqReset;
 extern SemaphoreHandle_t canMsgMutex;
+CanMsgWrapper* canMsgWrapperList = getCanMsgWrapperList();
 
 // 每秒清零 frequency 的任务
 void can_fd_reset_frequency_task(void *pvParameters)
@@ -23,11 +24,13 @@ void can_fd_reset_frequency_task(void *pvParameters)
         //Serial.println("[CanFD] [Reset] Now has the lock.");
         for (int i = 0; i < 63; i++)
         {
-            getCanMsgWrapperList()[i].resetCount();
-            if (getCanMsgWrapperList()[i].getCurrentFrequency() == 0 && getCanMsgWrapperList()[i].getLastFrequency() == 0)
+            canMsgWrapperList[i].resetCount();
+            canMsgWrapperList[i].triggerCacheContent();
+            if (canMsgWrapperList[i].getCurrentFrequency() == 0 && canMsgWrapperList[i].getLastFrequency() == 0)
             {
                 break;
             } // 如果这一条消息的频率为0，而且一秒前也是0，那后面的就不管了
+            
         }
         xSemaphoreGive(canMsgMutex);
 }
@@ -103,7 +106,7 @@ void print_can_fd_message(const T _hardwareSerial, CANFDMessage *canFdMessage, b
 /*
  * @brief 无参数的初始化canfd函数 以标准can模式、1MBit/s、40MHz二分频启动。
  */
-uint8_t can_fd_init()
+canwaifu_status can_fd_init()
 {
     return can_fd_init(7, 1 * 1000 * 1000, 1, 6);
 }
@@ -115,7 +118,7 @@ uint8_t can_fd_init()
  * @param dataBitRatefactor 数据比特率乘数。是仲裁部分比特率和数据部分比特率的比值。例如设为8就是8MBit/s。需要注意的是，如果工作在标准can模式下，此项要设为1。
  * @param mode MCP2518FD的工作模式。0: FD模式; 6: 标准Can模式; 3: 仅监听模式。不要设置为其他值。
  */
-uint8_t can_fd_init(uint8_t oscFreq, uint32_t arbitrationBitRate, uint8_t dataBitRatefactor, uint8_t mode)
+canwaifu_status can_fd_init(uint8_t oscFreq, uint32_t arbitrationBitRate, uint8_t dataBitRatefactor, uint8_t mode)
 {
     // 初始化信号灯
     pinMode(PIN_CANFD_STATUS, OUTPUT);
@@ -178,7 +181,7 @@ void can_fd_receive_task(void *pvParameters)
         int index = -1;
         for (int i = 0; i < 63; i++)
         {
-            if (getCanMsgWrapperList()[i].getID() == message.id)
+            if (canMsgWrapperList[i].getID() == message.id)
             {
                 // Serial.println("[FDCAN] Overwriting existing message.");
                 index = i;
@@ -186,7 +189,7 @@ void can_fd_receive_task(void *pvParameters)
             }
 
             // 如果这一条消息的频率为0，而且一秒前也是0，那就覆盖它
-            if (!(getCanMsgWrapperList()[i].getCurrentFrequency() | getCanMsgWrapperList()[i].getLastFrequency()))
+            if (!(canMsgWrapperList[i].getCurrentFrequency() | canMsgWrapperList[i].getLastFrequency()))
             {
                 index = i;
                 Serial.println("[FDCAN] Detected a new ID. ");
@@ -196,8 +199,8 @@ void can_fd_receive_task(void *pvParameters)
 
         if (index + 1) // 如果列表已满，直接丢弃
         {
-            getCanMsgWrapperList()[index].updateMessage(message);
-            getCanMsgWrapperList()[index].countPlusOne();
+            canMsgWrapperList[index].updateMessage(message);
+            canMsgWrapperList[index].countPlusOne();
         }
 
         xSemaphoreGive(canMsgMutex);

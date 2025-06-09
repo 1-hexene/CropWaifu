@@ -2,8 +2,8 @@
 #define WEBSERVER_TASKS_H
 
 #define HTTP_SERVER_PORT 80
+#include <canwaifu_base.h>
 #include <ESPAsyncWebServer.h> 
-#include <pins.h>
 #include <SPIFFS.h>
 #include <ArduinoJson.h>
 #include <can_msg_wrapper.h>

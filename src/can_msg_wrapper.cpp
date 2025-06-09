@@ -28,6 +28,10 @@ uint16_t CanMsgWrapper::resetCount() {
     return frequency;
 }
 
+void CanMsgWrapper::triggerCacheContent(){
+    cacheNextContent = true;
+}
+
 uint16_t CanMsgWrapper::getCurrentFrequency() {
     return frequency; // 返回上一次清零前的频率
 }
@@ -42,17 +46,22 @@ uint16_t CanMsgWrapper::countPlusOne() {
 }
 
 void CanMsgWrapper::updateMessage(const CANFDMessage &msg) {
-    memcpy(msgContent, msg.data, sizeof(msg.data));
+    if (cacheNextContent) {
+        memcpy(msgContent, msg.data, sizeof(msg.data));
+        cacheNextContent = false;
+    }
     msgID = msg.id;
     length = msg.len;
     type = msg.type;
 }
 
 void CanMsgWrapper::updateMessage(const CanFrame &twaiMsg) {
-    memcpy(msgContent, twaiMsg.data, sizeof(twaiMsg.data));
+    if (cacheNextContent) {
+        memcpy(msgContent, twaiMsg.data, sizeof(twaiMsg.data));
+        cacheNextContent = false;
+    }
     msgID = twaiMsg.identifier;
     length = twaiMsg.data_length_code;
-
     type = (twaiMsg.rtr)? Type::CAN_REMOTE : Type::CAN_DATA;
 
 }

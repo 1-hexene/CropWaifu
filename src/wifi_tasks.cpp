@@ -3,7 +3,6 @@
 static WiFiClass Wifi;
 
 /* 查表法转换字符串
- * C++我草泥马，高级语言也没有一个正常的int到char转换函数，还得自己实现，早晚换成Lua写
 */
 static std::string fuseSnToSsid(const uint8_t* data, uint8_t len, bool uppercase = true) {
     const char* hex_chars = uppercase ? "0123456789ABCDEF" : "0123456789abcdef";
