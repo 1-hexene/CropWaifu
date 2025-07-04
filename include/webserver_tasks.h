@@ -6,7 +6,6 @@
 #include <ESPAsyncWebServer.h> 
 #include <SPIFFS.h>
 #include <ArduinoJson.h>
-#include <can_msg_wrapper.h>
 
 canwaifu_status webserver_init();
 void webserver_post_task(void* pvParameters);
