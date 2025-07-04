@@ -12,7 +12,6 @@ void setup()
   if (wifi_init() | timer_init())
   {
     // 就把红灯打开
-    digitalWrite(PIN_LED_ERR, HIGH);
   }
   else
   {
@@ -23,19 +22,3 @@ void loop()
 {
   vTaskDelay(1000 / portTICK_PERIOD_MS);
 }
-
-void led_setup()
-{
-#if defined(HW_VER_1A) || defined(HW_VER_1AR2) || defined(HW_VER_1B)
-  pinMode(PIN_CANFD_STATUS, OUTPUT);
-  pinMode(PIN_TWAI_STATUS, OUTPUT);
-  pinMode(PIN_WIFI_STATUS, OUTPUT);
-#endif
-
-#ifdef HW_VER_1C
-  pinMode(PIN_LED_R, OUTPUT);
-  pinMode(PIN_LED_G, OUTPUT);
-  pinMode(PIN_LED_B, OUTPUT);
-#endif
-}
-// END FILE
