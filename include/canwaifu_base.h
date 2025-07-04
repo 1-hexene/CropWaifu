@@ -5,8 +5,8 @@
 #include <pins.h>
 
 enum canwaifu_status{
-    CANWAIFU_OK = 0b0,
-    CANWAIFU_ERR = 0b1
+    CANWAIFU_OK = 0,
+    CANWAIFU_ERR = 1
 };
 
 #endif
