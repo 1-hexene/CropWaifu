@@ -1,36 +1,27 @@
-#include <timer_tasks.h>
-#include <Wire.h>
+#include <canwaifu_base.h>
 #include <EspMQTTClient.h>
-
-EspMQTTClient client(
-  "F429", // WiFi SSID
-  "FF442299", // WiFi Password
-  "10.0.0.171", // MQTT server IP
-  "CropWaifu-Test", // MQTT client name
-  5001 // MQTT server port
-);
-
-void onConnectionEstablished() {
-
-  client.subscribe("cropwaifu/test", [] (const String &payload)  {
-    Serial.println(payload);
-  });
-
-  client.publish("cropwaifu/test", "This is a message");
-}
+#include <wifi_tasks.h>
+#include <control_tasks.h>
+#include <mqtt_tasks.h>
 
 void setup()
 {
-  vTaskDelay(1000 / portTICK_PERIOD_MS);
+  vTaskDelay(3000 / portTICK_PERIOD_MS);
   Serial.begin(115200);
   Serial.print("CropWaifu Software Version: ");
   Serial.println(SW_VER);
-  // 如果初始化炸掉了 （其中有一个的结果是1）
-  if (timer_init()){}
+  wifi_init();
+  control_init();
+  mqtt_init();
+ 
+  vTaskDelay(1000 / portTICK_PERIOD_MS);
+  Serial.println("[Main] Registering tasks...");
+  xTaskCreate (mqtt_loop_task, "MqttLoopTask", 4096, NULL, 1, NULL);
+  xTaskCreate (control_task, "ControlTask", 4096, NULL, 1, NULL);
+  Serial.println("[Main] Control task created");
 }
 
 void loop()
 {
-  client.loop(); // 处理MQTT连接
   vTaskDelay(1000 / portTICK_PERIOD_MS);
 }
