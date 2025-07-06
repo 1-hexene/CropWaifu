@@ -6,7 +6,10 @@
 #include <ArduinoJson.h>
 #include <control_tasks.h>
 
-canwaifu_status mqtt_init(void);
+void mqtt_init(void);
 void mqtt_loop_task(void *parameter);
+void mqtt_message_receive_callback(const String &payload);
+void mqtt_heartbeat_task(void *pvParameters);
+void onConnectionEstablished();
 
 #endif

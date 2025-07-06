@@ -16,7 +16,7 @@ CropWaifu is a fork of CanWaifu.
 
 ## How to use?
 
-Upper computer publish to topic `cropwaifu/control`
+Upper computer publishes to topic `cropwaifu/control`
 
 Message format （JSON）
 
@@ -33,7 +33,7 @@ Message format （JSON）
 }
 ```
 
-Lower computer publish to topic `cropwaifu/respond`
+Lower computer publishes to topic `cropwaifu/respond`
 
 Lower computer's response format (JSON)
 
