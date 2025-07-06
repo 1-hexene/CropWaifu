@@ -7,9 +7,9 @@ extern QueueHandle_t ctrlCmdQueue;
 canwaifu_status mqtt_init(void) {
     // Initialize MQTT client
     mqttClient = new EspMQTTClient(
-        "10.0.0.171", // MQTT server IP
-        5001, // MQTT server port
-        "CropWaifu-Test" // MQTT client name
+        MQTT_SERVER_IP, // MQTT server IP
+        MQTT_SERVER_PORT, // MQTT server port
+        MQTT_CLIENT_NAME // MQTT client name
     );
     mqttClient->setOnConnectionEstablishedCallback(onConnectionEstablished);
     mqttClient->enableDebuggingMessages(true); // Enable debugging messages
