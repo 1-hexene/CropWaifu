@@ -16,7 +16,7 @@ canwaifu_status wifi_init(void) {
     }
 
     Serial.println("[WIFI] Connected to WiFi");
-    Serial.println("");
+    Serial.println("=========[STATUS]=========");
     Serial.print("IP address: ");
     Serial.println(WiFi.localIP());
     Serial.print("RSSI: ");
@@ -24,5 +24,6 @@ canwaifu_status wifi_init(void) {
     Serial.println(" dBm");
     Serial.print("BSSID: ");
     Serial.println(WiFi.BSSIDstr());
+    Serial.println("==========================");
     return CANWAIFU_OK;
 }

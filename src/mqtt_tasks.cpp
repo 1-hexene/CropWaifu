@@ -15,7 +15,12 @@ void mqtt_init(void) {
     Serial.println("[MQTT] Initializing MQTT client...");
     Serial.printf("[MQTT] Server IP: %s, Port: %d, Client Name: %s\n", 
                     MQTT_SERVER_IP, MQTT_SERVER_PORT, MQTT_CLIENT_NAME);
-    mqttClient->setOnConnectionEstablishedCallback(&onConnectionEstablished);
+
+    mqttClient->setOnConnectionEstablishedCallback([](){
+        mqttClient->subscribe("cropwaifu/control", &mqtt_message_receive_callback);
+        xTaskCreate (mqtt_heartbeat_task, "MqttHeartbeatTask", 4096, NULL, 1, NULL);
+    });
+
     mqttClient->enableDebuggingMessages(ENABLE_MQTT_DEBUG); // Enable debugging messages
 }
 
@@ -26,10 +31,6 @@ void mqtt_loop_task(void *parameter) {
   }
 }
 
-void onConnectionEstablished(){
-    mqttClient->subscribe("cropwaifu/control", &mqtt_message_receive_callback);
-    xTaskCreate (mqtt_heartbeat_task, "MqttHeartbeatTask", 4096, NULL, 1, NULL);
-}
 
 void mqtt_heartbeat_task(void *pvParameters)
 {
@@ -37,7 +38,9 @@ void mqtt_heartbeat_task(void *pvParameters)
     {
         if (xSemaphoreTake(mqttHeartBeatSignal, portMAX_DELAY) == pdTRUE){ // 得到计时器中断信号
             // 发送心跳包
+            #if ENABLE_MQTT_DEBUG
             Serial.println("[MQTT] Sending heartbeat...");
+            #endif
             mqttClient->publish("cropwaifu/heartbeat", ("{\"BoardID\":" + std::to_string(BOARD_ID) + 
                                                         ",\"UpTime\":" + std::to_string(millis()/1000) + "}").c_str()); // 发送心跳包
         }

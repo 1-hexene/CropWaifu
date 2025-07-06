@@ -11,7 +11,7 @@ void control_task(void *pvParameters) {
     ControlCommand* ctrlCmd;
     while (true) {
         if (xQueueReceive(ctrlCmdQueue, &ctrlCmd, portMAX_DELAY) == pdPASS) {
-            Serial.println("[ControlTask] Received control command:");
+            Serial.print("[CTRL] ");
             ctrlCmd->print(); 
             delete ctrlCmd;  // 用完记得释放内存
         }
