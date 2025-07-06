@@ -63,13 +63,14 @@ void onConnectionEstablished() {
         commandJson["temperature"].as<float_t>(),
         commandJson["lightIntensity"].as<float_t>()
     );
+
+    // Send the control command to the queue
     if (xQueueSend(ctrlCmdQueue, &ctrlCmd, 0) != pdTRUE) {
         Serial.println("[MQTT] Failed to send control command to queue");
         delete ctrlCmd; // Clean up if sending to queue fails
     } else {
         Serial.println("[MQTT] Control command sent to queue successfully");
+
     }
 });
-
-  mqttClient->publish("cropwaifu/test", "This is a message");
 }

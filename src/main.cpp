@@ -1,8 +1,4 @@
-#include <canwaifu_base.h>
-#include <EspMQTTClient.h>
-#include <wifi_tasks.h>
-#include <control_tasks.h>
-#include <mqtt_tasks.h>
+#include <main.h>
 
 void setup()
 {
