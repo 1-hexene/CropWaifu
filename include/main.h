@@ -7,6 +7,7 @@
 #include <control_tasks.h>
 #include <mqtt_tasks.h>
 #include <timer_tasks.h>
+#include <ble_tasks.h>
 
 void setup();
 void loop();
