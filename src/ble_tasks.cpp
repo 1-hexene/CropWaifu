@@ -44,20 +44,39 @@ canwaifu_status cropwaifu_ble_init() {
     return CANWAIFU_OK; // 返回成功状态
 }
 
+// 打包BLE通知数据，返回20字节数组
+void pack_ble_notify_data(uint8_t* notifyData, const CropWaifuSensors& sensors) {
+    memset(notifyData, 0, 20);
+    // BoardID
+    notifyData[0] = (uint8_t)BOARD_ID;
+    // 温度（float转int16，*100）
+    int16_t temp = (int16_t)(sensors.temperature * 100);
+    notifyData[1] = temp & 0xFF;
+    notifyData[2] = (temp >> 8) & 0xFF;
+    // 光照强度
+    uint16_t light = sensors.lightIntensity;
+    notifyData[3] = light & 0xFF;
+    notifyData[4] = (light >> 8) & 0xFF;
+    // 风扇转速
+    uint16_t fan = sensors.fanSpeedRPM;
+    notifyData[5] = fan & 0xFF;
+    notifyData[6] = (fan >> 8) & 0xFF;
+    // 7-19字节保留为0
+}
+
 // BLE 任务函数
 void ble_task(void* pvParameters) {
 
     Serial.println("[BLE.] BLE Task started");
+    uint8_t notifyData[20] = {0};
+    TickType_t lastWakeTime = xTaskGetTickCount();
     while (true) {
         if (deviceConnected) {
-            // 如果设备已连接，检查是否有更新信号
-            if (xSemaphoreTake(bleUpdateSignal, portMAX_DELAY) == pdTRUE) {
-                // 发送通知
-                pCharacteristic->setValue("Update from CropWaifu");
-                pCharacteristic->notify();
-                Serial.println("[BLE.] Notification sent");
-            }
+            pack_ble_notify_data(notifyData, cropWaifuSensors);
+            pCharacteristic->setValue(notifyData, 20);
+            pCharacteristic->notify();
+            Serial.println("[BLE.] Notification sent");
         }
-        vTaskDelay(100 / portTICK_PERIOD_MS);
+        vTaskDelayUntil(&lastWakeTime, 500 / portTICK_PERIOD_MS); // 每500ms打包一次数据
     }
 }
