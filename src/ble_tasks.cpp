@@ -66,17 +66,24 @@ void pack_ble_notify_data(uint8_t* notifyData, const CropWaifuSensors& sensors) 
 
 // BLE 任务函数
 void ble_task(void* pvParameters) {
-
     Serial.println("[BLE.] BLE Task started");
     uint8_t notifyData[20] = {0};
     TickType_t lastWakeTime = xTaskGetTickCount();
     while (true) {
         if (deviceConnected) {
+            // 1. 非阻塞检查信号，有信号就立即notify（可多次处理）
+            while (xSemaphoreTake(bleUpdateSignal, 0) == pdTRUE) {
+                pack_ble_notify_data(notifyData, cropWaifuSensors);
+                pCharacteristic->setValue(notifyData, 20);
+                pCharacteristic->notify();
+                Serial.println("[BLE.] Notification sent (signal)");
+            }
+            // 2. 定时notify
             pack_ble_notify_data(notifyData, cropWaifuSensors);
             pCharacteristic->setValue(notifyData, 20);
             pCharacteristic->notify();
-            Serial.println("[BLE.] Notification sent");
+            Serial.println("[BLE.] Notification sent (periodic)");
         }
-        vTaskDelayUntil(&lastWakeTime, 500 / portTICK_PERIOD_MS); // 每500ms打包一次数据
+        vTaskDelayUntil(&lastWakeTime, 500 / portTICK_PERIOD_MS);
     }
 }
