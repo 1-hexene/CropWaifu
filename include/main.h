@@ -2,12 +2,14 @@
 #define MAIN_H
 
 #include <canwaifu_base.h>
-#include <EspMQTTClient.h>
-#include <wifi_tasks.h>
-#include <control_tasks.h>
-#include <mqtt_tasks.h>
 #include <timer_tasks.h>
-#include <ble_tasks.h>
+
+#include <control/control_tasks.h>
+#include <control/rgb_led.h>
+
+#include <telecom/mqtt_tasks.h>
+#include <telecom/wifi_tasks.h>
+#include <telecom/ble_tasks.h>
 
 void setup();
 void loop();

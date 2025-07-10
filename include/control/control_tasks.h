@@ -3,6 +3,9 @@
 
 #include <canwaifu_base.h>
 
+#define CTRL_MODE_ABS 0
+#define CTRL_MODE_PID 1
+
 class ControlCommand
 {
 private:

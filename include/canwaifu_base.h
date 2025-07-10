@@ -6,9 +6,9 @@
 /* BSP Pins */
 
 // LED Pins
-#define PIN_LED_R 3
-#define PIN_LED_G 5
-#define PIN_LED_B 8
+#define PIN_LED_R 5
+#define PIN_LED_G 8
+#define PIN_LED_B 3
 
 // I2C Pins
 #define PIN_I2C_SDA 0
@@ -27,7 +27,8 @@
 
 enum canwaifu_status{
     CANWAIFU_OK = 0,
-    CANWAIFU_ERR = 1
+    CANWAIFU_ERR = 1,
+    CANWAIFU_WARNING = 2
 };
 
 #endif

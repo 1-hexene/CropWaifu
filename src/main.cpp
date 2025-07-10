@@ -1,4 +1,5 @@
 #include <main.h>
+#include <driver/gpio.h>
 
 void setup()
 {
@@ -26,10 +27,11 @@ void setup()
   xTaskCreate (mqtt_loop_task, "MqttLoopTask", 4096, NULL, 1, NULL);
   xTaskCreate (control_task, "ControlTask", 4096, NULL, 1, NULL);
   xTaskCreate (ble_task,"BLE Task", 4096,NULL, 1, NULL);
+  xTaskCreate (rgb_led_task, "RGB LED Task", 4096, NULL, 1, NULL);
   Serial.println("[MAIN] Control task created");
 }
 
 void loop()
 {
-  vTaskDelay(1000 / portTICK_PERIOD_MS);
+  vTaskDelay(1000 / portTICK_PERIOD_MS); // Main loop does nothing, just delay
 }

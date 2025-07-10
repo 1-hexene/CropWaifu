@@ -2,7 +2,7 @@
 #define BLE_TAKS_H
 
 #include <canwaifu_base.h>
-#include <cropwaifu_sensors.h>
+#include <sensor/cropwaifu_sensors.h>
 #include <BLEDevice.h>
 #include <BLEServer.h>
 #include <BLEUtils.h>
