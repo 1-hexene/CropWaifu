@@ -8,8 +8,8 @@
 #include <BLEUtils.h>
 #include <BLE2902.h>
 
-#define SERVICE_UUID        "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
-#define CHARACTERISTIC_UUID "beb5483e-36e1-4688-b7f5-ea07361b26a8"
+#define SERVICE_UUID        "11451411-4514-1145-1411-000000000001"
+#define CHARACTERISTIC_UUID "19198101-9198-1019-1981-000000000001"
 
 canwaifu_status cropwaifu_ble_init();  // 创建 BLE 任务的接口函数
 void ble_task(void* pvParameters);  // BLE 任务函数

@@ -5,7 +5,9 @@ BLEServer* pServer = nullptr;
 BLECharacteristic* pCharacteristic = nullptr;
 extern SemaphoreHandle_t bleUpdateSignal;
 bool deviceConnected = false;
-CropWaifuSensors cropWaifuSensors = CropWaifuSensors();
+
+extern CropWaifuSensors cropWaifuSensors; // From sensor_tasks.cpp
+
 
 // 回调类：处理连接状态
 class MyServerCallbacks : public BLEServerCallbacks {
@@ -33,8 +35,9 @@ canwaifu_status cropwaifu_ble_init() {
                         BLECharacteristic::PROPERTY_READ |
                         BLECharacteristic::PROPERTY_NOTIFY
                     );
-
+   
     pCharacteristic->setValue("114514");
+    pCharacteristic->addDescriptor(new BLE2902()); //enable notifications
     pService->start();
 
     BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
@@ -51,16 +54,16 @@ void pack_ble_notify_data(uint8_t* notifyData, const CropWaifuSensors& sensors) 
     notifyData[0] = (uint8_t)BOARD_ID;
     // 温度（float转int16，*100）
     int16_t temp = (int16_t)(sensors.temperature * 100);
-    notifyData[1] = temp & 0xFF;
-    notifyData[2] = (temp >> 8) & 0xFF;
+    notifyData[2] = temp & 0xFF;
+    notifyData[1] = (temp >> 8) & 0xFF;
     // 光照强度
     uint16_t light = sensors.lightIntensity;
-    notifyData[3] = light & 0xFF;
-    notifyData[4] = (light >> 8) & 0xFF;
+    notifyData[4] = light & 0xFF;
+    notifyData[3] = (light >> 8) & 0xFF;
     // 风扇转速
     uint16_t fan = sensors.fanSpeedRPM;
-    notifyData[5] = fan & 0xFF;
-    notifyData[6] = (fan >> 8) & 0xFF;
+    notifyData[6] = fan & 0xFF;
+    notifyData[5] = (fan >> 8) & 0xFF;
     // 7-19字节保留为0
 }
 
@@ -76,13 +79,13 @@ void ble_task(void* pvParameters) {
                 pack_ble_notify_data(notifyData, cropWaifuSensors);
                 pCharacteristic->setValue(notifyData, 20);
                 pCharacteristic->notify();
-                Serial.println("[BLE.] Notification sent (signal)");
+                //Serial.println("[BLE.] Notification sent (signal)");
             }
             // 2. 定时notify
             pack_ble_notify_data(notifyData, cropWaifuSensors);
             pCharacteristic->setValue(notifyData, 20);
             pCharacteristic->notify();
-            Serial.println("[BLE.] Notification sent (periodic)");
+            //Serial.println("[BLE.] Notification sent (periodic)");
         }
         vTaskDelayUntil(&lastWakeTime, 500 / portTICK_PERIOD_MS);
     }
