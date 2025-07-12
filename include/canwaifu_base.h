@@ -27,8 +27,8 @@
 
 enum canwaifu_status{
     CANWAIFU_OK = 0,
-    CANWAIFU_ERR = 1,
-    CANWAIFU_WARNING = 2
+    CANWAIFU_WARNING = 1,
+    CANWAIFU_ERR = 3 // 0b11
 };
 
 #endif
