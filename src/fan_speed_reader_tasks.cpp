@@ -29,6 +29,6 @@ void fan_speed_reader_task(void *parameter) {
     Serial.printf("[FANS] Interrupt count: %d\n", currCount);
     cropWaifuSensors.fanSpeedRPM = currCount * 59; // Convert to RPM
 
-    vTaskDelay(pdMS_TO_TICKS(1017)); // 1017ms延时
+    vTaskDelay(pdMS_TO_TICKS(1017)); // 1017ms延时 1.017s * 59 = 60s
   }
 }
