@@ -5,6 +5,7 @@
 #include <timer_tasks.h>
 
 #include <sensor/sensor_tasks.h>
+#include <sensor/fan_speed_reader_tasks.h>
 
 #include <control/control_tasks.h>
 #include <control/cropwaifu_daemon.h>

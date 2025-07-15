@@ -14,7 +14,8 @@ void setup()
       control_init()|
       timer_init()|  // Initialize timer
       cropwaifu_ble_init() | 
-      sensor_init()
+      sensor_init() |
+      fan_speed_reader_init() // Initialize fan speed reader
   )
   {
     rgb_led_set_color(255, 0, 0); // red on error
@@ -38,6 +39,7 @@ void setup()
   xTaskCreate (ble_task,"BLE Task", 4096,NULL, 1, NULL);
   xTaskCreate (cropwaifu_daemon,"Cropwaifu Daemon", 4096, NULL, 1, NULL);
   xTaskCreate (sensor_task, "SensorTask", 4096, NULL, 1, NULL);
+  xTaskCreate (fan_speed_reader_task, "FanSpeedReaderTask", 4096, NULL, 1, NULL);
   Serial.println("[MAIN] Control task created");
 
 }
