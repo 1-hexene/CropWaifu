@@ -39,7 +39,7 @@ void cropwaifu_daemon(void *pvParameters) {
         switch (globalStatus)
         {
         case CANWAIFU_OK:
-            rgb_led_set_color(0, 255, 0); // 绿色
+            rgb_led_set_color(0, 128, 255); // 绿色
             break;
         case CANWAIFU_ERR:
             rgb_led_set_color(255, 0, 0); // 红色

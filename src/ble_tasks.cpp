@@ -64,7 +64,10 @@ void pack_ble_notify_data(uint8_t* notifyData, const CropWaifuSensors& sensors) 
     uint16_t fan = sensors.fanSpeedRPM;
     notifyData[6] = fan & 0xFF;
     notifyData[5] = (fan >> 8) & 0xFF;
-    // 7-19字节保留为0
+    // Humidity
+    uint16_t humidity = (uint16_t)(sensors.humidity * 100);
+    notifyData[8] = humidity & 0xFF;
+    notifyData[7] = (humidity >> 8) & 0xFF;
 }
 
 // BLE 任务函数

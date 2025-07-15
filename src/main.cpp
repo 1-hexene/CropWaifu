@@ -1,5 +1,6 @@
 #include <main.h>
-#include <driver/gpio.h>
+
+extern canwaifu_status globalStatus; // From cropwaifu_daemon.cpp
 
 void setup()
 {
@@ -20,7 +21,11 @@ void setup()
     vTaskDelay(1000 / portTICK_PERIOD_MS);
     Serial.println("[MAIN] Initialization failed, restarting...");
     ESP.restart();
+  } else {
+    Serial.println("[MAIN] Peripherial initialization successful.");
   }
+
+  Serial.println("[MAIN] Starting MQTT...");
   
   mqtt_init();
 

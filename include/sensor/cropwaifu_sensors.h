@@ -2,6 +2,8 @@
 #define CROPWAIFU_SENSORS_H
 
 #include <canwaifu_base.h>
+#include <sensor/bh1750fvi_lib.h>
+#include <SHT85.h>
 
 class CropWaifuSensors
 {
@@ -9,6 +11,7 @@ class CropWaifuSensors
         /* data */
     public:
         float temperature; // 温度
+        float humidity; // 湿度
         uint16_t lightIntensity; // 光照强度
         uint16_t fanSpeedRPM; // 风扇速度
 
@@ -21,7 +24,8 @@ class CropWaifuSensors
         String toString() {
             String result = "CropWaifuSensors(temperature: " + String(temperature) +
                             ", lightIntensity: " + String(lightIntensity) +
-                            ", fanSpeedRPM: " + String(fanSpeedRPM) + ")";
+                            ", fanSpeedRPM: " + String(fanSpeedRPM) + 
+                            ", humidity: " + String(humidity) + ")";
             return result;
         }
 };
