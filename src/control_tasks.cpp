@@ -6,6 +6,7 @@ canwaifu_status control_init(void) {
     pinMode(PIN_FAN_CON, OUTPUT); // 设置风扇控制引脚为输出
     pinMode(PIN_LIGHT_CON, OUTPUT); // 设置LED控制引脚为输出
     ctrlCmdQueue = xQueueCreate(10, sizeof(ControlCommand*));
+    Serial.println("[CTRL] Control command queue initialized.");
     return CANWAIFU_OK;
 }
 

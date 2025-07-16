@@ -17,14 +17,14 @@ canwaifu_status sensor_init() {
 
     // Initialize Ambient Light Sensors
     if (als1.begin()) {
-        Serial.println("[SENS] ALS 1 (0x23) initialized.");
+        Serial.println("[SENS] ALS #1 (0x23) initialized.");
     } else {
         Serial.println("[SENS] Failed to init ALS #1 (0x23).");
         return CANWAIFU_ERR;
     }
 
     if (als2.begin()) {
-        Serial.println("[SENS] ALS2 (0x5C) initialized.");
+        Serial.println("[SENS] ALS #2 (0x5C) initialized.");
     } else {
         Serial.println("Failed to init ALS #2 (0x5C).");
         return CANWAIFU_ERR;
@@ -32,14 +32,14 @@ canwaifu_status sensor_init() {
 
     // Initialize SHT sensors
     if (sht301.begin()) {
-        Serial.println("[SENS] SHT301 (0x44) initialized.");
+        Serial.println("[SENS] SHT30 #1 (0x44) initialized.");
     } else {
         Serial.println("[SENS] Failed to init SHT30 #1 (0x44).");
         return CANWAIFU_ERR;
     }
 
     if (sht302.begin()) {
-        Serial.println("[SENS] SHT302 (0x45) initialized.");
+        Serial.println("[SENS] SHT30 #2 (0x45) initialized.");
     } else {
         Serial.println("[SENS] Failed to init SHT30 #2 (0x45).");
         return CANWAIFU_ERR;

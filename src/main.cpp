@@ -5,22 +5,30 @@ extern canwaifu_status globalStatus; // From cropwaifu_daemon.cpp
 void setup()
 {
   rgb_led_init(); // 初始化RGB LED
-  vTaskDelay(3000 / portTICK_PERIOD_MS);
   Serial.begin(115200);
-  Serial.print("CropWaifu Software Version: ");
+  uint8_t i = 1;
+  Serial.println("CropWaifu ready to start. \nWaiting 3s for peripherals to power up....");
+  while ( i <= 3 ) {
+    Serial.printf("%d...", i);
+    i ++;
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
+  }
+  
+  Serial.print("\nCropWaifu Software Version: ");
   Serial.println(SW_VER);
 
-  if (wifi_init() | // Initialize WiFi
-      control_init()|
+  if (control_init()|
       timer_init()|  // Initialize timer
       cropwaifu_ble_init() | 
       sensor_init() |
-      fan_speed_reader_init() // Initialize fan speed reader
+      fan_speed_reader_init()| // Initialize fan speed reader
+      wifi_init() // Initialize WiFi
   )
   {
     rgb_led_set_color(255, 0, 0); // red on error
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
     Serial.println("[MAIN] Initialization failed, restarting...");
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
+
     ESP.restart();
   } else {
     Serial.println("[MAIN] Peripherial initialization successful.");

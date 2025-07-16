@@ -8,6 +8,7 @@ canwaifu_status fan_speed_reader_init() {
     //TODO: try INPUT_PULLUP to see if the pull-up resistor is needed
     pinMode(PIN_FAN_INT, INPUT);
     attachInterrupt(PIN_FAN_INT, fan_speed_reader_ISR, RISING);
+    Serial.println("[FANS] Fan speed reader initialized.");
     return CANWAIFU_OK;
 }
 

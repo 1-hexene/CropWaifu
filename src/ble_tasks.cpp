@@ -22,7 +22,7 @@ class MyServerCallbacks : public BLEServerCallbacks {
 
 // BLE 初始化函数
 canwaifu_status cropwaifu_ble_init() {
-    Serial.println("[BLE.] Initializing BLE...");
+    Serial.println("[BTLE] Initializing BLE...");
   
     BLEDevice::init("CropWaifu"); // 初始化 BLE 设备名称
     pServer = BLEDevice::createServer();
@@ -43,7 +43,7 @@ canwaifu_status cropwaifu_ble_init() {
     BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
     pAdvertising->addServiceUUID(SERVICE_UUID);
     pAdvertising->start();
-    Serial.println("[BLE.] Broadcasting BLE service...");
+    Serial.println("[BTLE] Broadcasting BLE service...");
     return CANWAIFU_OK; // 返回成功状态
 }
 
@@ -72,7 +72,7 @@ void pack_ble_notify_data(uint8_t* notifyData, const CropWaifuSensors& sensors) 
 
 // BLE 任务函数
 void ble_task(void* pvParameters) {
-    Serial.println("[BLE.] BLE Task started");
+    Serial.println("[BTLE] BLE Task started");
     uint8_t notifyData[20] = {0};
     TickType_t lastWakeTime = xTaskGetTickCount();
     while (true) {
