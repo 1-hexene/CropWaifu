@@ -12,9 +12,6 @@ CropWaifuSensors cropWaifuSensors = CropWaifuSensors();
 SemaphoreHandle_t cropWaifuSensorsMutex; // Mutex for sensor access
 extern canwaifu_status globalStatus; // From cropwaifu_daemon.cpp
 
-extern uint8_t fanPWM; // From control_tasks.cpp
-extern uint8_t ledPWM; // From control_tasks.cpp
-
 canwaifu_status sensor_init() {
     // Initialize I2C for sensors
     Wire.begin(PIN_I2C_SDA, PIN_I2C_SCL);  // Wire.begin(sda, scl);
@@ -59,44 +56,44 @@ void sensor_task(void *pvParameters) {
     float temp1, temp2, humidity1, humidity2;
 
     while (true) {
-        if (xSemaphoreTake(cropWaifuSensorsMutex, portMAX_DELAY) != pdTRUE) {
-            Serial.println("[SENS] Failed to take sensor mutex.");
-            continue; // Skip this iteration if mutex is not available
+        if (xSemaphoreTake(cropWaifuSensorsMutex, portMAX_DELAY) == pdTRUE) {
+            lux1 = als1.read_lux();
+            lux2 = als2.read_lux();
+
+            if (lux1 < 0 || lux2 < 0) {
+                Serial.println("[SENS] Error reading lux values. Resetting ALS...");
+                globalStatus = canwaifu_status(globalStatus | CANWAIFU_WARNING); // Update global status
+                digitalWrite(PIN_BH1750_RST, HIGH); // Reset BH1750 sensors
+                vTaskDelay(1 / portTICK_PERIOD_MS); // Wait for 1ms
+                digitalWrite(PIN_BH1750_RST, LOW); // Clear reset
+                continue;
+            } else {
+                globalStatus = canwaifu_status(globalStatus & ~CANWAIFU_WARNING); // Clear warning status
+            }
+
+            sht301.requestData();
+            sht302.requestData();
+            vTaskDelay(1 / portTICK_PERIOD_MS); // Allow time for the sensors to process the request
+            while (!sht301.dataReady() || !sht302.dataReady()) {
+                vTaskDelay(1 / portTICK_PERIOD_MS); // Wait for data to be ready
+            }
+            sht301.readData();
+            sht302.readData();
+            temp1 = sht301.getTemperature();
+            temp2 = sht302.getTemperature();
+            humidity1 = sht301.getHumidity();
+            humidity2 = sht302.getHumidity();
+
+            cropWaifuSensors.lightIntensity = (lux1 + lux2) / 2; // Average of both sensors
+            cropWaifuSensors.humidity = (humidity1 + humidity2) / 2.0f; // Average of both sensors
+            cropWaifuSensors.temperature = (temp1 + temp2) / 2.0f; // Average of both
+            // Serial.printf("[SENS] Light Intensity: %d lux\n", cropWaifuSensors.lightIntensity);
+            // Serial.printf("[SENS] Temperature: %.2f °C\n", cropWaifuSensors.temperature);
+            // Serial.printf("[SENS] Humidity: %.2f %%\n", cropWaifuSensors.humidity);
+
+            xSemaphoreGive(cropWaifuSensorsMutex);
         }
-        lux1 = als1.read_lux();
-        lux2 = als2.read_lux();
-
-        if (lux1 < 0 || lux2 < 0) {
-            Serial.println("[SENS] Error reading lux values. Resetting ALS...");
-            globalStatus = canwaifu_status(globalStatus | CANWAIFU_WARNING); // Update global status
-            digitalWrite(PIN_BH1750_RST, HIGH); // Reset BH1750 sensors
-            vTaskDelay(1 / portTICK_PERIOD_MS); // Wait for 1ms
-            digitalWrite(PIN_BH1750_RST, LOW); // Clear reset
-            continue;
-        } else {
-            globalStatus = canwaifu_status(globalStatus & ~CANWAIFU_WARNING); // Clear warning status
-        }
-
-        sht301.requestData();
-        sht302.requestData();
-        vTaskDelay(1 / portTICK_PERIOD_MS); // Allow time for the sensors to process the request
-        while (!sht301.dataReady() || !sht302.dataReady()) {
-            vTaskDelay(1 / portTICK_PERIOD_MS); // Wait for data to be ready
-        }
-        sht301.readData();
-        sht302.readData();
-        temp1 = sht301.getTemperature();
-        temp2 = sht302.getTemperature();
-        humidity1 = sht301.getHumidity();
-        humidity2 = sht302.getHumidity();
-
-        cropWaifuSensors.lightIntensity = (lux1 + lux2) / 2; // Average of both sensors
-        cropWaifuSensors.humidity = (humidity1 + humidity2) / 2.0f; // Average of both sensors
-        cropWaifuSensors.temperature = (temp1 + temp2) / 2.0f; // Average of both
-        Serial.printf("[SENS] Light Intensity: %d lux\n", cropWaifuSensors.lightIntensity);
-        Serial.printf("[SENS] Temperature: %.2f °C\n", cropWaifuSensors.temperature);
-        Serial.printf("[SENS] Humidity: %.2f %%\n", cropWaifuSensors.humidity);
-
-        vTaskDelay(998 / portTICK_PERIOD_MS); // Update per 1000ms
+ 
+        vTaskDelay(20 / portTICK_PERIOD_MS); // Update per 1000ms
     }
 }

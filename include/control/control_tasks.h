@@ -7,6 +7,11 @@
 #define CTRL_MODE_ABS 1
 #define CTRL_MODE_PID 0
 
+#define PWM_MAX 255
+#define PWM_MIN 0
+
+#define KP 100
+
 class ControlCommand
 {
 private:
@@ -34,5 +39,7 @@ public:
 
 canwaifu_status control_init(void);
 void control_task(void *pvParameters);
+void led_control_task(void *pvParameters);
+void fan_control_task(void *pvParameters);
 
 #endif // CONTROL_TASKS_H

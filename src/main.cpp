@@ -47,7 +47,9 @@ void setup()
   xTaskCreate (ble_task,"BLE Task", 4096,NULL, 1, NULL);
   xTaskCreate (cropwaifu_daemon,"Cropwaifu Daemon", 4096, NULL, 1, NULL);
   xTaskCreate (sensor_task, "SensorTask", 4096, NULL, 1, NULL);
+  xTaskCreate (led_control_task, "LedControlTask", 4096, NULL, 1, NULL);
   xTaskCreate (fan_speed_reader_task, "FanSpeedReaderTask", 4096, NULL, 1, NULL);
+  xTaskCreate (fan_control_task, "FanControlTask", 4096, NULL, 1, NULL);
   Serial.println("[MAIN] Control task created");
 
 }
