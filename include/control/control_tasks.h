@@ -2,6 +2,7 @@
 #define CONTROL_TASKS_H
 
 #include <canwaifu_base.h>
+#include <sensor/cropwaifu_sensors.h>
 
 #define CTRL_MODE_ABS 1
 #define CTRL_MODE_PID 0

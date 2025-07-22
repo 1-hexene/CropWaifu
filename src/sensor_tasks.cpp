@@ -9,7 +9,11 @@ SHT sht301(0x44);
 SHT sht302(0x45);
 
 CropWaifuSensors cropWaifuSensors = CropWaifuSensors();
+SemaphoreHandle_t cropWaifuSensorsMutex; // Mutex for sensor access
 extern canwaifu_status globalStatus; // From cropwaifu_daemon.cpp
+
+extern uint8_t fanPWM; // From control_tasks.cpp
+extern uint8_t ledPWM; // From control_tasks.cpp
 
 canwaifu_status sensor_init() {
     // Initialize I2C for sensors
@@ -50,10 +54,15 @@ canwaifu_status sensor_init() {
 
 void sensor_task(void *pvParameters) {
     Serial.println("[SENS] Sensor Task started");
+    cropWaifuSensorsMutex = xSemaphoreCreateMutex();
     uint16_t lux1, lux2;
     float temp1, temp2, humidity1, humidity2;
 
     while (true) {
+        if (xSemaphoreTake(cropWaifuSensorsMutex, portMAX_DELAY) != pdTRUE) {
+            Serial.println("[SENS] Failed to take sensor mutex.");
+            continue; // Skip this iteration if mutex is not available
+        }
         lux1 = als1.read_lux();
         lux2 = als2.read_lux();
 
