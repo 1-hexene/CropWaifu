@@ -2,8 +2,6 @@
 #define CROPWAIFU_SENSORS_H
 
 #include <canwaifu_base.h>
-#include <sensor/bh1750fvi_lib.h>
-#include <SHT85.h>
 
 class CropWaifuSensors
 {
@@ -14,9 +12,12 @@ class CropWaifuSensors
         float humidity; // 湿度
         uint16_t lightIntensity; // 光照强度
         uint16_t fanSpeedRPM; // 风扇速度
+        uint8_t fanPWM; // 风扇PWM值
+        uint8_t ledPWM; // LED PWM值
 
         CropWaifuSensors() 
-            : temperature(0.0f), lightIntensity(0.0f), fanSpeedRPM(0) {
+            : temperature(0.0f), lightIntensity(0.0f), fanSpeedRPM(0), 
+              humidity(0.0f), fanPWM(0), ledPWM(0) {
             // Constructor implementation
         }
         ~CropWaifuSensors() = default;
@@ -25,7 +26,9 @@ class CropWaifuSensors
             String result = "CropWaifuSensors(temperature: " + String(temperature) +
                             ", lightIntensity: " + String(lightIntensity) +
                             ", fanSpeedRPM: " + String(fanSpeedRPM) + 
-                            ", humidity: " + String(humidity) + ")";
+                            ", humidity: " + String(humidity) + 
+                            ", fanPWM: " + String(fanPWM) +
+                            ", ledPWM: " + String(ledPWM) + ")";
             return result;
         }
 };
