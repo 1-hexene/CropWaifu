@@ -39,14 +39,14 @@ void control_task(void *pvParameters) {
                 analogWrite(PIN_FAN_CON, ledPWM); // 控制风扇
                 analogWrite(PIN_LIGHT_CON, fanPWM);
                 enablePIDControl = false; // 禁用PID控制
-                Serial.printf("[CTRL] PID control disabled.");
+                Serial.println("[CTRL] PID control disabled.");
                 break;
 
             case CTRL_MODE_PID:
                 targetLightIntensity = ctrlCmd->_lightIntensity; // 更新目标光照强度
                 targetTemperature = ctrlCmd->_temperature; // 更新目标温度
                 enablePIDControl = true; // 启用PID控制
-                Serial.printf("[CTRL] PID control enabled.");
+                Serial.println("[CTRL] PID control enabled.");
                 break;
             
             default:
@@ -106,7 +106,7 @@ void fan_control_task(void *pvParameters) {
       error = error < PWM_MIN ? PWM_MIN : error;
       fanPWM = error > PWM_MAX ? PWM_MAX : (uint8_t) error;
       analogWrite(PIN_FAN_CON, fanPWM); // 控制风扇速度
-      Serial.printf("[FAN] PWM: %d\n", fanPWM);
+      // Serial.printf("[FAN] PWM: %d\n", fanPWM);
     }
     
 
