@@ -60,6 +60,8 @@ void control_task(void *pvParameters) {
 void led_control_task(void *pvParameters) {
 
   uint16_t currentLightIntensity = 0;
+  int16_t error = 0;
+  int16_t integral = 0; // 积分项
 
   while (true) {
     // Step 1: 获取当前光照值（线程安全）
@@ -68,13 +70,18 @@ void led_control_task(void *pvParameters) {
       cropWaifuSensors.ledPWM = ledPWM; // 更新LED PWM值到传感器对象
       xSemaphoreGive(cropWaifuSensorsMutex);
     }
-    if (enablePIDControl) { 
-      if (currentLightIntensity < targetLightIntensity * 0.95){
-        ledPWM = ledPWM < PWM_MAX ? ledPWM + 1 : PWM_MAX;
+    if (enablePIDControl) {
+      error = (int16_t) (targetLightIntensity - currentLightIntensity);
+      if (abs(error) < 30) {
+        integral += error;
+        integral = constrain(integral, -5000, 5000); // 积分限幅
       }
-      else if (currentLightIntensity > targetLightIntensity * 1.05){
-        ledPWM = ledPWM > PWM_MIN ? ledPWM - 1 : PWM_MIN;
-      }
+
+      int controlOutput = (int)((KP_LED * error + KI_LED * integral) / 1000);
+
+      int tempPWM = ledPWM + controlOutput;
+
+      ledPWM = constrain(tempPWM, PWM_MIN, PWM_MAX); // 限制PWM值在0-255之间
 
       ledcWrite(0, ledPWM); // 控制LED亮度
       // Serial.printf("[LED] LI: %d, PWM: %d\n",currentLightIntensity, ledPWM);
@@ -95,7 +102,7 @@ void fan_control_task(void *pvParameters) {
       xSemaphoreGive(cropWaifuSensorsMutex);
     }
     if (enablePIDControl) { 
-      error = (int16_t) ((currentTemperature - targetTemperature) * KP);
+      error = (int16_t) ((currentTemperature - targetTemperature) * KP_FAN);
       error = error < PWM_MIN ? PWM_MIN : error;
       fanPWM = error > PWM_MAX ? PWM_MAX : (uint8_t) error;
       analogWrite(PIN_FAN_CON, fanPWM); // 控制风扇速度

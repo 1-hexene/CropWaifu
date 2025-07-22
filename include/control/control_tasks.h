@@ -10,7 +10,9 @@
 #define PWM_MAX 255
 #define PWM_MIN 0
 
-#define KP 100
+#define KP_LED 10 // 0.01
+#define KI_LED 2 // 0.002
+#define KP_FAN 100
 
 class ControlCommand
 {
