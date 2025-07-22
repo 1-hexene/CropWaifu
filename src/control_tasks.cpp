@@ -68,17 +68,17 @@ void led_control_task(void *pvParameters) {
       cropWaifuSensors.ledPWM = ledPWM; // 更新LED PWM值到传感器对象
       xSemaphoreGive(cropWaifuSensorsMutex);
     }
+    if (enablePIDControl) { 
+      if (currentLightIntensity < targetLightIntensity * 0.95){
+        ledPWM = ledPWM < PWM_MAX ? ledPWM + 1 : PWM_MAX;
+      }
+      else if (currentLightIntensity > targetLightIntensity * 1.05){
+        ledPWM = ledPWM > PWM_MIN ? ledPWM - 1 : PWM_MIN;
+      }
 
-    if (currentLightIntensity < targetLightIntensity * 0.95){
-      ledPWM = ledPWM < PWM_MAX ? ledPWM + 1 : PWM_MAX;
+      ledcWrite(0, ledPWM); // 控制LED亮度
+      // Serial.printf("[LED] LI: %d, PWM: %d\n",currentLightIntensity, ledPWM);
     }
-    else if (currentLightIntensity > targetLightIntensity * 1.05){
-      ledPWM = ledPWM > PWM_MIN ? ledPWM - 1 : PWM_MIN;
-    }
-
-    ledcWrite(0, ledPWM); // 控制LED亮度
-    // Serial.printf("[LED] LI: %d, PWM: %d\n",currentLightIntensity, ledPWM);
-
     vTaskDelay(10 / portTICK_PERIOD_MS); // 每10ms调整一次LED亮度
   }
 }
