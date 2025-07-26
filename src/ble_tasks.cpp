@@ -8,6 +8,7 @@ extern SemaphoreHandle_t bleUpdateSignal;
 bool deviceConnected = false;
 
 extern CropWaifuSensors cropWaifuSensors; // From sensor_tasks.cpp
+extern canwaifu_status globalStatus;
 
 
 // 回调类：处理连接状态
@@ -27,6 +28,7 @@ class MyServerCallbacks : public BLEServerCallbacks {
         Serial.println("[BTLE] Advertising restarted.");
     } else {
         Serial.println("[BTLE] Error: pAdvertising is null after disconnect.");
+        globalStatus = CANWAIFU_ERR;
     }
   }
 };

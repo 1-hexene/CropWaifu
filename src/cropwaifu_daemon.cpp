@@ -52,6 +52,7 @@ void cropwaifu_daemon(void *pvParameters) {
         }
 
         if (errorCount >= 10) {
+            Serial.println("[DMON] #######[CRITICAL ERROR]#######");
             Serial.println("[DMON] Too many errors, restarting...");
             ESP.restart();
         }
