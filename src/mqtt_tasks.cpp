@@ -41,8 +41,8 @@ void mqtt_heartbeat_task(void *pvParameters)
             #if ENABLE_MQTT_DEBUG
             Serial.println("[MQTT] Sending heartbeat...");
             #endif
-            mqttClient->publish("cropwaifu/heartbeat", ("{\"BoardID\":" + std::to_string(BOARD_ID) + 
-                                                        ",\"UpTime\":" + std::to_string(millis()/1000) + "}").c_str()); // 发送心跳包
+            mqttClient->publish("cropwaifu/heartbeat", ("{\"boardID\":" + std::to_string(BOARD_ID) + 
+                                                        ",\"seqNo\":" + std::to_string(millis()/1000) + "}").c_str()); // 发送心跳包
         }
     }
 }

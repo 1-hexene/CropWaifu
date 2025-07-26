@@ -1,4 +1,5 @@
 #include <telecom/ble_tasks.h>
+#include "BLEDevice.h" // Ensure BLEDevice.h is included for BLEAdvertising
 
 // BLE 全局变量
 BLEServer* pServer = nullptr;
@@ -13,18 +14,28 @@ extern CropWaifuSensors cropWaifuSensors; // From sensor_tasks.cpp
 class MyServerCallbacks : public BLEServerCallbacks {
   void onConnect(BLEServer* pServer) override {
     deviceConnected = true;
+    Serial.println("[BTLE] Device connected!"); // Add a log for connection
   }
 
   void onDisconnect(BLEServer* pServer) override {
     deviceConnected = false;
+    Serial.println("[BTLE] Device disconnected! Restarting advertising..."); // Log disconnection
+    // After a disconnect, restart advertising to allow new connections
+    BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
+    if (pAdvertising != nullptr) {
+        pAdvertising->start();
+        Serial.println("[BTLE] Advertising restarted.");
+    } else {
+        Serial.println("[BTLE] Error: pAdvertising is null after disconnect.");
+    }
   }
 };
 
 // BLE 初始化函数
 canwaifu_status cropwaifu_ble_init() {
     Serial.println("[BTLE] Initializing BLE...");
-  
-    BLEDevice::init("CropWaifu"); // 初始化 BLE 设备名称
+
+    BLEDevice::init("CropWaifu-1"); // 初始化 BLE 设备名称
     pServer = BLEDevice::createServer();
     pServer->setCallbacks(new MyServerCallbacks());
 
@@ -35,7 +46,7 @@ canwaifu_status cropwaifu_ble_init() {
                         BLECharacteristic::PROPERTY_READ |
                         BLECharacteristic::PROPERTY_NOTIFY
                     );
-   
+
     pCharacteristic->setValue("114514");
     pCharacteristic->addDescriptor(new BLE2902()); //enable notifications
     pService->start();
@@ -82,17 +93,27 @@ void ble_task(void* pvParameters) {
     while (true) {
         if (deviceConnected) {
             // 1. 非阻塞检查信号，有信号就立即notify（可多次处理）
+            // While loop to process all pending signals
             while (xSemaphoreTake(bleUpdateSignal, 0) == pdTRUE) {
                 pack_ble_notify_data(notifyData, cropWaifuSensors);
                 pCharacteristic->setValue(notifyData, 20);
                 pCharacteristic->notify();
-                //Serial.println("[BLE.] Notification sent (signal)");
+                //Serial.println("[BLE.] Notification sent (signal)"); // Uncomment for verbose logging
             }
-            // 2. 定时notify
+            // 2. 定时notify (only if no signal was processed recently or for guaranteed updates)
+            // You might want to re-evaluate if you need both signal-based and periodic notifications.
+            // For robust handling, signal-based is preferred for responsiveness, periodic for general updates.
+            // If many signals come in quickly, the periodic one might be redundant.
+            // For now, keeping both as in original.
             pack_ble_notify_data(notifyData, cropWaifuSensors);
             pCharacteristic->setValue(notifyData, 20);
             pCharacteristic->notify();
-            //Serial.println("[BLE.] Notification sent (periodic)");
+            //Serial.println("[BLE.] Notification sent (periodic)"); // Uncomment for verbose logging
+        } else {
+            // If not connected, simply wait and don't try to notify
+            // This prevents issues if pCharacteristic is not ready or connection is down.
+            // The onDisconnect callback handles re-advertising.
+            //Serial.println("[BTLE] Not connected, waiting..."); // Uncomment for verbose logging
         }
         vTaskDelayUntil(&lastWakeTime, 500 / portTICK_PERIOD_MS);
     }
