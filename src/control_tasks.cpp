@@ -15,8 +15,8 @@ bool enablePIDControl = false;
 canwaifu_status control_init(void) {
     pinMode(PIN_FAN_CON, OUTPUT); // 设置风扇控制引脚为输出
     pinMode(PIN_LIGHT_CON, OUTPUT); // 设置LED控制引脚为输出
-    ledcAttachPin(PIN_LIGHT_CON, 0); // 将风扇控制引脚连接到通道0
-    ledcSetup(0, 500, 8); // 设置通道0的频率为500Hz，分辨率为8位
+    ledcAttachPin(PIN_LIGHT_CON, 1); // 将风扇控制引脚连接到通道0
+    ledcSetup(1, 500, 8); // 设置通道0的频率为500Hz，分辨率为8位
     ctrlCmdQueue = xQueueCreate(10, sizeof(ControlCommand*));
     Serial.println("[CTRL] Control command queue initialized.");
     return CANWAIFU_OK;
@@ -83,8 +83,8 @@ void led_control_task(void *pvParameters) {
 
       ledPWM = constrain(tempPWM, PWM_MIN, PWM_MAX); // 限制PWM值在0-255之间
 
-      ledcWrite(0, ledPWM); // 控制LED亮度
-      // Serial.printf("[LED] LI: %d, PWM: %d\n",currentLightIntensity, ledPWM);
+      ledcWrite(1, ledPWM); // 控制LED亮度
+      //Serial.printf("[LED] LI: %d, PWM: %d\n",currentLightIntensity, ledPWM);
     }
     vTaskDelay(10 / portTICK_PERIOD_MS); // 每10ms调整一次LED亮度
   }
@@ -108,8 +108,6 @@ void fan_control_task(void *pvParameters) {
       analogWrite(PIN_FAN_CON, fanPWM); // 控制风扇速度
       // Serial.printf("[FAN] PWM: %d\n", fanPWM);
     }
-    
-
     vTaskDelay(10 / portTICK_PERIOD_MS); // 每10ms调整一次风扇速度
   }
 }
