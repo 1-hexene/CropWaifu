@@ -25,10 +25,11 @@ void mqtt_init(void) {
 }
 
 void mqtt_loop_task(void *parameter) {
-  while (true) {
-    mqttClient->loop();         // MQTT loop
-    vTaskDelay(10 / portTICK_PERIOD_MS);  // Avoid CPU hogging
-  }
+    Serial.println("[MQTT] MQTT Loop Task started.");
+    while (true) {
+        mqttClient->loop();         // MQTT loop
+        vTaskDelay(10 / portTICK_PERIOD_MS);  // Avoid CPU hogging
+    }
 }
 
 

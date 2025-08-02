@@ -26,7 +26,7 @@ canwaifu_status control_init(void) {
 
 void control_task(void *pvParameters) {
     ControlCommand* ctrlCmd;
-    
+    Serial.println("[CTRL] Control Loop Task started.");
     while (true) {
         if (xQueueReceive(ctrlCmdQueue, &ctrlCmd, portMAX_DELAY) == pdPASS) {
             Serial.print("[CTRL] ");
@@ -36,8 +36,8 @@ void control_task(void *pvParameters) {
             case CTRL_MODE_ABS:
                 ledPWM = ctrlCmd->_led; // 更新LED PWM值
                 fanPWM = ctrlCmd->_fan; // 更新风扇PWM值
-                analogWrite(PIN_FAN_CON, ledPWM); // 控制风扇
-                analogWrite(PIN_LIGHT_CON, fanPWM);
+                analogWrite(PIN_LIGHT_CON, ledPWM); // 控制风扇
+                analogWrite(PIN_FAN_CON, fanPWM);
                 enablePIDControl = false; // 禁用PID控制
                 Serial.println("[CTRL] PID control disabled.");
                 break;
@@ -58,7 +58,7 @@ void control_task(void *pvParameters) {
 }
 
 void led_control_task(void *pvParameters) {
-
+  Serial.println("[CTRL] LED Control Task started.");
   uint16_t currentLightIntensity = 0;
   int16_t error = 0;
   int16_t integral = 0; // 积分项
@@ -93,6 +93,7 @@ void led_control_task(void *pvParameters) {
 void fan_control_task(void *pvParameters) {
   float currentTemperature = 0.0f;
   int16_t error = 0;
+  Serial.println("[CTRL] Fan Control Task started.");
 
   while (true) {
     // Step 1: 获取当前风扇PWM值（线程安全）

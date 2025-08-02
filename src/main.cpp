@@ -51,7 +51,7 @@ void setup()
   xTaskCreate (fan_speed_reader_task, "FanSpeedReaderTask", 4096, NULL, 1, NULL);
   xTaskCreate (fan_control_task, "FanControlTask", 4096, NULL, 1, NULL);
   Serial.println("[MAIN] All tasks created.");
-  Serial.println("===================================");
+  Serial.println("========[INIT FINISHED]=======");
 
 }
 

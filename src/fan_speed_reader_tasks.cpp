@@ -6,7 +6,7 @@ extern CropWaifuSensors cropWaifuSensors; // From sensor_tasks.cpp
 
 canwaifu_status fan_speed_reader_init() {
     //TODO: try INPUT_PULLUP to see if the pull-up resistor is needed
-    pinMode(PIN_FAN_INT, INPUT);
+    pinMode(PIN_FAN_INT, INPUT_PULLUP);
     attachInterrupt(PIN_FAN_INT, fan_speed_reader_ISR, RISING);
     Serial.println("[FANS] Fan speed reader initialized.");
     return CANWAIFU_OK;
@@ -20,6 +20,7 @@ void IRAM_ATTR fan_speed_reader_ISR() {
 
 void fan_speed_reader_task(void *parameter) {
   uint16_t currCount = 0;
+  Serial.println("[FANS] Fan speed reader task created.");
   while (true) {
     // 为防止并发冲突，复制一个副本
     portENTER_CRITICAL(&fan_speed_mux);

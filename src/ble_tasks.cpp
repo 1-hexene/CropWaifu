@@ -37,7 +37,7 @@ class MyServerCallbacks : public BLEServerCallbacks {
 canwaifu_status cropwaifu_ble_init() {
     Serial.println("[BTLE] Initializing BLE...");
 
-    BLEDevice::init("CropWaifu-1"); // 初始化 BLE 设备名称
+    BLEDevice::init(BLE_ADVERTISE_NAME); // 初始化 BLE 设备名称
     pServer = BLEDevice::createServer();
     pServer->setCallbacks(new MyServerCallbacks());
 
@@ -81,10 +81,13 @@ void pack_ble_notify_data(uint8_t* notifyData, const CropWaifuSensors& sensors) 
     uint16_t humidity = (uint16_t)(sensors.humidity * 100);
     notifyData[8] = humidity & 0xFF;
     notifyData[7] = (humidity >> 8) & 0xFF;
+
+    // Global Status
+    notifyData[9] = globalStatus & 0xFF;
     // Fan PWM
-    notifyData[9] = sensors.fanPWM & 0xFF; // Fan PWM
+    notifyData[10] = sensors.fanPWM & 0xFF; // Fan PWM
     // LED PWM
-    notifyData[10] = sensors.ledPWM & 0xFF;
+    notifyData[11] = sensors.ledPWM & 0xFF;
 }
 
 // BLE 任务函数
