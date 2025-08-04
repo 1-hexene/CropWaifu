@@ -94,6 +94,6 @@ void sensor_task(void *pvParameters) {
             xSemaphoreGive(cropWaifuSensorsMutex);
         }
  
-        vTaskDelay(20 / portTICK_PERIOD_MS); // Update per 1000ms
+        vTaskDelay(25 / portTICK_PERIOD_MS); // Update per 1000ms
     }
 }

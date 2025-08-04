@@ -10,9 +10,15 @@
 #define PWM_MAX 255
 #define PWM_MIN 0
 
-#define KP_LED 10 // 0.01
-#define KI_LED 2 // 0.002
-#define KP_FAN 100
+#define KP_LED 60
+#define KI_LED 2
+#define KD_LED 10
+#define PID_LED_DEADZONE 20 // 死区范围
+
+#define KP_FAN 100 // 0.1
+
+#define LED_CONTROL_INTERVAL_MS 100
+#define FAN_CONTROL_INTERVAL_MS 30
 
 class ControlCommand
 {

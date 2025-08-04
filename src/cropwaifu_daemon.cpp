@@ -5,17 +5,27 @@ canwaifu_status globalStatus = CANWAIFU_OK; // 全局状态变量
 
 void rgb_led_init() {
     pinMode(PIN_LED_R, OUTPUT);
+    ledcAttachPin(PIN_LED_R, PWM_CHANNEL_LED_R); // 将LED紅燈控制引脚连接到通道0
+    ledcSetup(PWM_CHANNEL_LED_R, 2000, 8); // 设置通道0的频率为2000Hz，分辨率为8位
+
     pinMode(PIN_LED_G, OUTPUT);
+    ledcAttachPin(PIN_LED_G, PWM_CHANNEL_LED_G);
+    ledcSetup(PWM_CHANNEL_LED_G, 2000, 8);
+
     pinMode(PIN_LED_B, OUTPUT);
-    analogWrite(PIN_LED_R, 0);
-    analogWrite(PIN_LED_G, 0);
-    analogWrite(PIN_LED_B, 255);
+    ledcAttachPin(PIN_LED_B, PWM_CHANNEL_LED_B);
+    ledcSetup(PWM_CHANNEL_LED_B, 2000, 8);
+    
+    ledcWrite(PWM_CHANNEL_LED_R, 0);
+    ledcWrite(PWM_CHANNEL_LED_G, 0);
+    ledcWrite(PWM_CHANNEL_LED_B, 255);
 }
 
 void rgb_led_set_color(uint8_t r, uint8_t g, uint8_t b) {
-    analogWrite(PIN_LED_R, r);
-    analogWrite(PIN_LED_G, g);
-    analogWrite(PIN_LED_B, b);
+    ledcWrite(PWM_CHANNEL_LED_R, r);
+    ledcWrite(PWM_CHANNEL_LED_G, g);
+    ledcWrite(PWM_CHANNEL_LED_B, b);
+
 }
 
 void rgb_led_blink(uint8_t r, uint8_t g, uint8_t b, uint32_t duration) {
@@ -25,9 +35,7 @@ void rgb_led_blink(uint8_t r, uint8_t g, uint8_t b, uint32_t duration) {
 }
 
 void rgb_led_off() {
-    analogWrite(PIN_LED_R, 0);
-    analogWrite(PIN_LED_G, 0);
-    analogWrite(PIN_LED_B, 0);
+    rgb_led_set_color(0, 0, 0); // 关闭RGB LED
 }
 
 void cropwaifu_daemon(void *pvParameters) {

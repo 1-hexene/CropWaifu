@@ -34,6 +34,13 @@
 // Light Stripe Pins
 #define PIN_LIGHT_CON 10
 
+/*PWM Channels*/
+#define PWM_CHANNEL_LED_R 0
+#define PWM_CHANNEL_LED_G 1
+#define PWM_CHANNEL_LED_B 2
+#define PWM_CHANNEL_LIGHT 3
+#define PWM_CHANNEL_FAN 4
+
 enum canwaifu_status{
     CANWAIFU_OK = 0,
     CANWAIFU_WARNING = 1,
