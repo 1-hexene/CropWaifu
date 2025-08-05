@@ -8,7 +8,7 @@ uint8_t fanPWM = 0;
 uint8_t ledPWM = 0;
 
 uint16_t targetLightIntensity = 0; // 目标光照强度
-float targetTemperature = 0.0f; // 目标温度
+uint16_t targetTemperature_x100 = 0; // 目标温度
 bool enablePIDControl = false;
 
 
@@ -48,7 +48,7 @@ void control_task(void *pvParameters) {
 
             case CTRL_MODE_PID:
                 targetLightIntensity = ctrlCmd->_lightIntensity; // 更新目标光照强度
-                targetTemperature = ctrlCmd->_temperature; // 更新目标温度
+                targetTemperature_x100 = (uint16_t) (ctrlCmd->_temperature) * 100; // 更新目标温度
                 enablePIDControl = true; // 启用PID控制
                 Serial.println("[CTRL] PID control enabled.");
                 break;
@@ -109,24 +109,40 @@ void led_control_task(void *pvParameters) {
 
 
 void fan_control_task(void *pvParameters) {
-  float currentTemperature = 0.0f;
-  int16_t error = 0;
+  int16_t currentTemperature_x100 = 0;  // 温度 x100，单位 0.1°C
+  int16_t tempError = 0;
+  int16_t pwmOutput = 0;
+
   Serial.println("[CTRL] Fan Control Task started.");
 
   while (true) {
-    // Step 1: 获取当前风扇PWM值（线程安全）
+    // 获取当前温度（线程安全）
     if (xSemaphoreTake(cropWaifuSensorsMutex, portMAX_DELAY) == pdTRUE) {
-      currentTemperature = cropWaifuSensors.temperature;
-      cropWaifuSensors.fanPWM = fanPWM; // 更新风扇PWM值到传感器对象
+      currentTemperature_x100 = (int16_t)(cropWaifuSensors.temperature * 100);
+      cropWaifuSensors.fanPWM = fanPWM;
       xSemaphoreGive(cropWaifuSensorsMutex);
     }
-    if (enablePIDControl) { 
-      error = (int16_t) ((currentTemperature - targetTemperature) * KP_FAN);
-      error = error < PWM_MIN ? PWM_MIN : error;
-      fanPWM = error > PWM_MAX ? PWM_MAX : (uint8_t) error;
-      ledcWrite(PWM_CHANNEL_FAN, fanPWM); // 控制风扇速度
-      // Serial.printf("[FAN] PWM: %d\n", fanPWM);
+
+    if (enablePIDControl) {
+      tempError = currentTemperature_x100 - targetTemperature_x100;
+
+      // 温度死区处理
+      if (abs(tempError) < DEAD_ZONE_TEMP_x100) {
+        // 死区内，关风扇
+        fanPWM = 0;
+
+      } else {
+        pwmOutput = (tempError * KP_FAN) / 100;
+        // 限幅
+        if (pwmOutput < PWM_MIN) pwmOutput = PWM_MIN;
+        if (pwmOutput > PWM_MAX) pwmOutput = PWM_MAX;
+        fanPWM = (uint8_t)pwmOutput;
+      }
+      // Serial.printf("currentTemp = %d, target = %d, tempError = %d, fanPWM = %d\n", currentTemperature_x100, targetTemperature_x100, tempError, fanPWM);
+      ledcWrite(PWM_CHANNEL_FAN, fanPWM);
     }
-    vTaskDelay(FAN_CONTROL_INTERVAL_MS / portTICK_PERIOD_MS); // 每10ms调整一次风扇速度
+
+    vTaskDelay(FAN_CONTROL_INTERVAL_MS / portTICK_PERIOD_MS);
   }
 }
+
